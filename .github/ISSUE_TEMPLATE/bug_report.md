@@ -1,5 +1,5 @@
 ---
-name: Bug report
+name: 🐞 Bug report
 about: 버그나 오류가 발생했을 때 제보
 title: "\U0001F41B[BUG] "
 labels: bug
