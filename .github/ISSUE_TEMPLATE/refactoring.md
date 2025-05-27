@@ -1,5 +1,5 @@
 ---
-name: Refactoring
+name: ✨ Refactoring
 about: 코드 구조 개선이나 리팩토링 시 사용
 title: '♻️ [Refactor] '
 labels: refactor
