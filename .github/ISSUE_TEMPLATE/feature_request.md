@@ -1,5 +1,5 @@
 ---
-name: Feature request
+name: 🎀 Feature request
 about: 새로운 기능
 title: '✨ [Feat] '
 labels: ✨feature
