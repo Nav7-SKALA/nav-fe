@@ -4,18 +4,18 @@ import styled from 'styled-components';
 import { NaviLogo } from '../assets/common';
 import { FaPowerOff } from 'react-icons/fa';
 import { FiSidebar, FiEdit } from 'react-icons/fi';
+import { AiOutlineUser } from 'react-icons/ai';
 
-type Header1Props = {
+type HeaderProps = {
   type?: 'default' | 'simple';
   username: string;
 };
 
-const Header = ({ type = 'default', username }: Header1Props) => {
+const Header = ({ type = 'default', username }: HeaderProps) => {
   const navigate = useNavigate();
 
   const handleClickHomeBtn = () => {
-    alert('홈으로 이동합니다.');
-    // navigate('/');
+    navigate('/main/*');
   };
 
   const handleLogoutBtn = () => {
@@ -29,10 +29,10 @@ const Header = ({ type = 'default', username }: Header1Props) => {
         {type === 'default' && (
           <>
             <IconBtn>
-              <FiSidebar size={30} />
+              <FiSidebar size={28} />
             </IconBtn>
             <IconBtn>
-              <FiEdit size={30} />
+              <FiEdit size={28} />
             </IconBtn>
           </>
         )}
@@ -42,14 +42,17 @@ const Header = ({ type = 'default', username }: Header1Props) => {
       </LeftSection>
       <NavItems>
         <UserName>{username} 님</UserName>
-
+        <IconBtn>
+          <AiOutlineUser size={28} />
+        </IconBtn>
         <ExitBtn onClick={handleLogoutBtn}>
-          <FaPowerOff size={30} color="#FF8B8B" />
+          <FaPowerOff size={24} color="#FF8B8B" />
         </ExitBtn>
       </NavItems>
     </NavSection>
   );
 };
+
 export default Header;
 
 const NavSection = styled.section`
@@ -57,14 +60,14 @@ const NavSection = styled.section`
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  padding: 1rem 3rem;
+  padding: 1rem 1rem;
   box-sizing: border-box;
 `;
 
 const LeftSection = styled.div`
   display: flex;
   align-items: center;
-  gap: 0rem;
+  //gap: 0.5rem; /* 간격 추가 */
 `;
 
 const IconBtn = styled.button`
@@ -76,6 +79,16 @@ const IconBtn = styled.button`
   justify-content: center;
   width: 3rem;
   height: 3rem;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  &:active {
+    background-color: rgba(0, 0, 0, 0.1);
+  }
 `;
 
 const HomeBtn = styled.button`
@@ -86,18 +99,23 @@ const HomeBtn = styled.button`
   align-items: center;
   justify-content: center;
   width: 5rem;
-  height: 7rem;
+  height: 3.5rem;
+  //margin-left: 0.5rem;
 `;
+
 const NavItems = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
+  gap: 0.5rem;
 `;
+
 const UserName = styled.p`
   font-size: 1.2rem;
   font-weight: bold;
+  margin: 0; /* 기본 마진 제거 */
 `;
+
 const ExitBtn = styled.button`
   background: none;
   border: none;
@@ -110,10 +128,12 @@ const ExitBtn = styled.button`
   background-color: #fff;
   border-radius: 100%;
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.25);
+  transition: background-color 0.2s ease;
 
   &:hover {
     background-color: #f0f0f0;
   }
+
   &:active {
     background-color: #e0e0e0;
   }
