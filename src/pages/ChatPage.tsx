@@ -108,9 +108,9 @@ const ChatPage = () => {
             );
           })}
         </ChatContent>
-        <ChatInput setMessages={setMessages} isFetchMessages={isFetchMessages} />
-        <AlertComment>Navi는 실수를 할 수 있습니다. 중요한 정보는 재차 확인하세요.</AlertComment>
       </ChatContainer>
+      <ChatInput setMessages={setMessages} isFetchMessages={isFetchMessages} />
+      <AlertComment>Navi는 실수를 할 수 있습니다. 중요한 정보는 재차 확인하세요.</AlertComment>
     </ChatPageContainer>
   );
 };
@@ -121,7 +121,7 @@ const ChatPageContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   height: 100vh;
   min-width: 100vw;
   width: fit-content;
