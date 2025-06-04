@@ -17,8 +17,7 @@ const Header = ({ type = 'default', username, onSidebarToggle, isSidebarOpen }: 
   const navigate = useNavigate();
 
   const handleClickHomeBtn = () => {
-    alert('홈으로 이동합니다.');
-    // navigate('/');
+    navigate('/main/*');
   };
 
   const handleLogoutBtn = () => {
@@ -35,7 +34,7 @@ const Header = ({ type = 'default', username, onSidebarToggle, isSidebarOpen }: 
               <FiSidebar size={30} />
             </IconBtn>
             <IconBtn>
-              <FiEdit size={30} />
+              <FiEdit size={28} />
             </IconBtn>
           </>
         )}
@@ -49,12 +48,13 @@ const Header = ({ type = 'default', username, onSidebarToggle, isSidebarOpen }: 
           <AiOutlineUser size={30} />
         </IconBtn>
         <ExitBtn onClick={handleLogoutBtn}>
-          <FaPowerOff size={30} color="#FF8B8B" />
+          <FaPowerOff size={24} color="#FF8B8B" />
         </ExitBtn>
       </RightSection>
     </HeaderContainer>
   );
 };
+
 export default Header;
 
 const HeaderContainer = styled.section<{ type: string; isSidebarOpen?: boolean }>`
@@ -72,7 +72,7 @@ const HeaderContainer = styled.section<{ type: string; isSidebarOpen?: boolean }
 const LeftSection = styled.div`
   display: flex;
   align-items: center;
-  gap: 0rem;
+  //gap: 0.5rem; /* 간격 추가 */
 `;
 
 const IconBtn = styled.button`
@@ -84,6 +84,16 @@ const IconBtn = styled.button`
   justify-content: center;
   width: 3rem;
   height: 3rem;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  &:active {
+    background-color: rgba(0, 0, 0, 0.1);
+  }
 `;
 
 const HomeBtn = styled.button`
@@ -94,18 +104,22 @@ const HomeBtn = styled.button`
   align-items: center;
   justify-content: center;
   width: 5rem;
-  height: 7rem;
+  height: 3.5rem;
+  //margin-left: 0.5rem;
 `;
 const RightSection = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 1rem;
 `;
+
 const UserName = styled.p`
   font-size: 1.2rem;
   font-weight: bold;
+  margin: 0; /* 기본 마진 제거 */
 `;
+
 const ExitBtn = styled.button`
   background: none;
   border: none;
@@ -118,10 +132,12 @@ const ExitBtn = styled.button`
   background-color: #fff;
   border-radius: 100%;
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.25);
+  transition: background-color 0.2s ease;
 
   &:hover {
     background-color: #f0f0f0;
   }
+
   &:active {
     background-color: #e0e0e0;
   }
