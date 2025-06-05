@@ -1,46 +1,85 @@
-# Getting Started with Create React App
+# 🚀 Project Name
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+사내 구성원들의 개인 성장을 지원하는 AI 기반 Path 추천 서비스 **Navi**
 
-## Available Scripts
+- 프로젝트 경험 기반 로드맵을 분석하여 현재 Career 상태를 시각화합니다.
+- 챗봇과 인터랙션을 통해 다음 학습 단계 또는 유사한 롤모델 경로를 추천받을 수 있습니다.
 
-In the project directory, you can run:
+## ❤️ Git Commit Message Convention
 
-### `npm start`
+### ✅ commit 유형 지정
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+커밋 유형은 **영어 대문자**로 작성합니다.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+| 커밋 유형  | 의미                                    |
+| ---------- | --------------------------------------- |
+| `Feat`     | 새로운 기능 추가                        |
+| `Fix`      | 버그 수정                               |
+| `Docs`     | 문서 수정                               |
+| `Style`    | 코드 formatting, 세미콜론 누락 등       |
+| `Refactor` | 코드 리팩토링 (기능 변화 없음)          |
+| `Test`     | 테스트 코드 추가 또는 수정              |
+| `Design`   | CSS 등 사용자 UI 디자인 변경            |
+| `Comment`  | 필요한 주석 추가 및 변경                |
+| `!HOTFIX`  | 급하게 치명적인 버그를 고쳐야 하는 경우 |
 
-### `npm test`
+### ✍️ 커밋 메시지 작성 규칙
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- `제목(Title)`과 `본문(Body)`은 **빈 줄로 구분**합니다.
+- 제목은 **한글로 작성**하되, 직관적으로 **'무엇을', '왜'** 변경했는지 전달되도록 합니다.
+- 제목은 **영문 기준 50자 이내**로 작성합니다.
+- 제목의 **첫 글자는 대문자**, **끝에는 마침표(.) 생략**합니다.
+- 여러 항목은 `-` 또는 `*` 기호 등 **글머리 기호**로 가독성을 높입니다.
 
-### `npm run build`
+### 💡 기타 팁
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- **"내 코드는 직관적이다"라는 생각은 금물** — 메시지에 변경 이유를 꼭 남기기
+- 코드 변경보다 메시지 품질이 협업 생산성에 더 큰 영향을 줄 수 있습니다
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## 🌱 Branch Naming Convention
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+| 예시                    |
+| ----------------------- |
+| `feat/23-chat-input`    |
+| `fix/41-auth-bug`       |
+| `docs/18-update-readme` |
 
-### `npm run eject`
+- `type`은 커밋 유형과 동일하게 사용 (`feat`, `fix`, `docs` 등)
+- `description`은 간결하게 작성하며, 단어는 `-`로 구분
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+---
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## 🐛 Issue Naming Convention
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+이슈 제목에는 다음과 같은 태그를 앞에 붙입니다:
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+- `[Feat]` 새로운 기능 제안
+- `[Fix]` 버그 리포트
+- `[Docs]` 문서 수정 요청
+- `[Design]` UI/UX 개선
+- `[Chore]` 설정, 배포, 라이브러리 관리 등
 
-## Learn More
+| 예시                                 |
+| ------------------------------------ |
+| `[Feat] 챗봇 응답 기능 추가`         |
+| `[Fix] 로그인 실패 시 500 오류 수정` |
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## 🔁 Pull Request Convention
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+PR 제목 형식:
+
+| 예시                                   |
+| -------------------------------------- |
+| `feat: 사용자 로드맵 시각화 기능 구현` |
+| `fix: 세션 만료 시 리다이렉트 추가`    |
+
+PR 본문에는 다음 항목을 포함하면 좋습니다:
+
+- 관련 이슈 번호 (`Closes #23`)
+- 변경 사항 요약
+- 테스트 방법 (선택)
+
+---
+
+> 위 컨벤션은 협업의 효율성과 코드 이력을 명확하게 관리하기 위함입니다.  
+> 모든 팀원은 본 가이드라인을 따라 커밋, 브랜치, PR을 작성해주세요.
