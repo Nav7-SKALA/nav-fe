@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sk036-nav7-fe
+  namespace: skala-argocd
+spec:
+  destination:
+    namespace: sk-team-07
+    server: https://96BD83E8CE5CE0396D006BC5CEB350B0.gr7.ap-northeast-2.eks.amazonaws.com
+  project: class-2
+  source:
+    path: k8s
+    repoURL: https://github.com/Nav7-SKALA/nav-fe.git
+    targetRevision: develop
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - PrunePropagationPolicy=background

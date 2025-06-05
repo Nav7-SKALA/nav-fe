@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nav7-fe-deploy
+  labels:
+    app: nav7-fe
+  namespace: sk-team-07   # 필요에 따라 네임스페이스 변경
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nav7-fe
+  template:
+    metadata:
+      labels:
+        app: nav7-fe
+    spec:
+      serviceAccountName: default
+      containers:
+        - name: nav7-fe
+          image: amdp-registry.skala-ai.com/skala25a/sk-nav7-fe:1.0.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
