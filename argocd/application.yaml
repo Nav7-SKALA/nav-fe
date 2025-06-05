@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: sk036-nav7-fe
+  name: sk-nav7-fe
   namespace: skala-argocd
 spec:
   destination:
