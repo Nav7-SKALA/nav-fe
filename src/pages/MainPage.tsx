@@ -1,23 +1,60 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import MainBackground from '../assets/main/img_main_background.svg';
-import Header from '../components/Header';
+import Header from '../components/layout/Header';
 import ChatInput from '../components/chat/ChatInput';
 import { Message } from '../types/chat';
 import { PathImg, PencilImg, RoleModelImg } from '../assets/main';
+import { useLayoutStore } from '../store/useLayoutStore';
+import { useSessionStore } from '../store/useSessionStore';
+import Navbar from '../components/layout/Navbar';
 
 const MainPage = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const inputRef = React.useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
+
+  // ✅ zustand 상태 추출
+  const { isSidebarOpen, headerType, toggleSidebar, setHeaderType } = useLayoutStore();
+  const { sessions, resetSessions, fetchNextSessions } = useSessionStore();
 
   useEffect(() => {
     inputRef.current?.focus();
+    fetchNextSessions();
   }, []);
+
+  // 사이드바 토글 시 헤더 타입도 변경
+  useEffect(() => {
+    if (isSidebarOpen) {
+      setHeaderType('simple');
+    } else {
+      setHeaderType('default'); // 또는 기본 타입
+    }
+  }, [isSidebarOpen, setHeaderType]);
+
+  const handleDeleteSession = () => {
+    alert(`세션삭제됨`); // 실제 구현 필요
+  };
+
+  const handleNewChat = () => {
+    navigate('/main/');
+  };
 
   return (
     <MainPageContainer>
-      <Header username="손성민" />
-      <MainContent>
+      <TopSection>
+        {isSidebarOpen && (
+          <Navbar
+            sessions={sessions}
+            onDeleteSession={handleDeleteSession}
+            onNewChat={handleNewChat}
+            onToggleSidebar={toggleSidebar}
+          />
+        )}
+        <Header username="손성민" type={headerType} onSidebarToggle={toggleSidebar} isSidebarOpen={isSidebarOpen} />
+      </TopSection>
+      <MainContent isSidebarOpen={isSidebarOpen}>
         <GrettingSection>
           <H1>메인 화면</H1>
           <SubGretting>안녕하세요, 손성민 님</SubGretting>
@@ -79,7 +116,23 @@ const MainPageContainer = styled.div`
   background-position: center;
 `;
 
-const MainContent = styled.section`
+const TopSection = styled.div`
+  display: flex;
+  width: 100%;
+  height: 80px; /* 헤더 높이 */
+`;
+
+// const MainContent = styled.section`
+//   display: flex;
+//   flex: 1;
+//   flex-direction: column;
+//   align-items: center;
+//   justify-content: center;
+//   width: 100%;
+//   height: calc(100vh - 80px);
+//   padding-bottom: 15vh;
+// `;
+const MainContent = styled.section<{ isSidebarOpen: boolean }>`
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -88,6 +141,8 @@ const MainContent = styled.section`
   width: 100%;
   height: calc(100vh - 80px);
   padding-bottom: 15vh;
+  margin-left: ${(props) => (props.isSidebarOpen ? '250px' : '0')}; /* 사이드바 너비만큼 마진 */
+  transition: margin-left 0.3s ease;
 `;
 
 const GrettingSection = styled.section`

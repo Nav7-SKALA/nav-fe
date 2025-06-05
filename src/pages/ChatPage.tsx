@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import Header from '../components/Header';
+import Header from '../components/layout/Header';
 import ChatItem from '../components/chat/ChatItem';
 import ChatInput from '../components/chat/ChatInput';
 import { Message } from '../types/chat';

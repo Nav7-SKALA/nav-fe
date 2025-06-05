@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { NaviLogo } from '../assets/common';
+import { NaviLogo } from '../../assets/common';
 import { FaPowerOff } from 'react-icons/fa';
 import { FiSidebar, FiEdit } from 'react-icons/fi';
 import { AiOutlineUser } from 'react-icons/ai';
@@ -9,9 +9,11 @@ import { AiOutlineUser } from 'react-icons/ai';
 type HeaderProps = {
   type?: 'default' | 'simple';
   username: string;
+  onSidebarToggle?: () => void;
+  isSidebarOpen?: boolean;
 };
 
-const Header = ({ type = 'default', username }: HeaderProps) => {
+const Header = ({ type = 'default', username, onSidebarToggle, isSidebarOpen }: HeaderProps) => {
   const navigate = useNavigate();
 
   const handleClickHomeBtn = () => {
@@ -24,12 +26,12 @@ const Header = ({ type = 'default', username }: HeaderProps) => {
   };
 
   return (
-    <NavSection>
+    <HeaderContainer type={type} isSidebarOpen={isSidebarOpen}>
       <LeftSection>
         {type === 'default' && (
           <>
-            <IconBtn>
-              <FiSidebar size={28} />
+            <IconBtn onClick={onSidebarToggle}>
+              <FiSidebar size={30} />
             </IconBtn>
             <IconBtn>
               <FiEdit size={28} />
@@ -40,28 +42,31 @@ const Header = ({ type = 'default', username }: HeaderProps) => {
           <NaviLogo />
         </HomeBtn>
       </LeftSection>
-      <NavItems>
+      <RightSection>
         <UserName>{username} 님</UserName>
         <IconBtn>
-          <AiOutlineUser size={28} />
+          <AiOutlineUser size={30} />
         </IconBtn>
         <ExitBtn onClick={handleLogoutBtn}>
           <FaPowerOff size={24} color="#FF8B8B" />
         </ExitBtn>
-      </NavItems>
-    </NavSection>
+      </RightSection>
+    </HeaderContainer>
   );
 };
 
 export default Header;
 
-const NavSection = styled.section`
+const HeaderContainer = styled.section<{ type: string; isSidebarOpen?: boolean }>`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 100%;
+  width: ${(props) => (props.isSidebarOpen ? 'calc(100% - 250px)' : '100%')};
+  // width: 100%;
   padding: 1rem 1rem;
   box-sizing: border-box;
+  //transition: width 0.3s ease;
+  z-index: 10;
 `;
 
 const LeftSection = styled.div`
@@ -102,12 +107,11 @@ const HomeBtn = styled.button`
   height: 3.5rem;
   //margin-left: 0.5rem;
 `;
-
-const NavItems = styled.div`
+const RightSection = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 1rem;
 `;
 
 const UserName = styled.p`
