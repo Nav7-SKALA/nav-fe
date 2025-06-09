@@ -19,6 +19,7 @@ function AppRouter() {
         <Route path="/main/*" element={<MainPage />} />
         <Route path="/mypage" element={<MyPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/signup/*" element={<LoginPage />} />
         <Route path="/intro" element={<IntroPage />} />
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/rolemodel/*" element={<RoleModelPage />} />
