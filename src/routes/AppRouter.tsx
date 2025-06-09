@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from '../pages/Home';
@@ -18,10 +19,10 @@ function AppRouter() {
         <Route path="/login/*" element={<LoginPage />} />
         <Route path="/main/*" element={<MainPage />} />
         <Route path="/mypage" element={<MyPage />} />
-        <Route path="/register" element={<RegisterPage />} />
         <Route path="/signup/*" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
         <Route path="/intro" element={<IntroPage />} />
-        <Route path="/chat" element={<ChatPage />} />
+        <Route path="/chat/:sessionId" element={<ChatPage />} />
         <Route path="/rolemodel/*" element={<RoleModelPage />} />
         <Route path="/rolemodelchat/*" element={<RoleModelChatPage />} />
       </Routes>
@@ -30,3 +31,4 @@ function AppRouter() {
 }
 
 export default AppRouter;
+

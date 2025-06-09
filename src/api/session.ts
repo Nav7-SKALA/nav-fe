@@ -1,5 +1,6 @@
 import api from './index';
 import { ChatSession } from '../types/session';
+import { Message } from '../types/chat';
 
 export interface FetchSessionParams {
   cursorAt?: string;
@@ -44,3 +45,50 @@ export const fetchSessions = async (params: FetchSessionParams = { size: 15 }): 
 export const deleteSession = async (sessionId: string): Promise<void> => {
   await api.post(`/sessions/delete/${sessionId}`);
 };
+
+export interface FetchSessionMessageResponse {
+  sessionId: string;
+  sessionTitle: string;
+  createdAt: string;
+  messages: Message[];
+  hasNext: boolean;
+  nextMessageId?: string; // 추가: 다음 메시지 ID
+}
+
+export const fetchSessionMessages = async (
+  sessionId: string,
+  cursor?: string,
+  size: number = 10
+): Promise<FetchSessionMessageResponse> => {
+  const response = await api.get(`/sessions/${sessionId}`, {
+    params: { cursor, size },
+    withCredentials: true,
+  });
+
+  const data = response.data.result;
+
+  const cleanedMessages = (data.messages ?? []).map((msg: Message) => {
+    let cleanedAnswer = msg.answer;
+
+    try {
+      const parsed = JSON.parse(cleanedAnswer);
+      if (parsed?.response && typeof parsed.response === 'string') {
+        cleanedAnswer = parsed.response;
+      }
+    } catch (e) {
+      // 파싱 실패하면 그대로 둠
+    }
+
+    return { ...msg, answer: cleanedAnswer };
+  });
+
+  return {
+    sessionId: data.sessionId,
+    sessionTitle: data.sessionTitle,
+    createdAt: data.createdAt,
+    messages: cleanedMessages,
+    hasNext: data.hasNext ?? false,
+    nextMessageId: data.nextMessageId ?? null,
+  };
+};
+

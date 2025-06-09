@@ -9,6 +9,7 @@ import { PathImg, PencilImg, RoleModelImg } from '../assets/main';
 import { useLayoutStore } from '../store/useLayoutStore';
 import { useSessionStore } from '../store/useSessionStore';
 import Navbar from '../components/layout/Navbar';
+import { deleteSession } from '../api/session';
 
 const MainPage = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -33,12 +34,29 @@ const MainPage = () => {
     }
   }, [isSidebarOpen, setHeaderType]);
 
-  const handleDeleteSession = () => {
-    alert(`세션삭제됨`); // 실제 구현 필요
+  const handleDeleteSession = async (sessionId: string) => {
+    try {
+      await deleteSession(sessionId); // ✅ 실제 API 호출
+      useSessionStore.setState((prev) => ({
+        sessions: prev.sessions.filter((s) => s.sessionId !== sessionId),
+      }));
+    } catch (error) {
+      console.error('세션 삭제 실패:', error);
+    }
   };
 
   const handleNewChat = () => {
     navigate('/main/');
+  };
+
+  const createNewSession = useSessionStore((state) => state.createNewSession);
+
+  const handleCreateNewSession = async (question: string): Promise<{ sessionId: string }> => {
+    const { sessionId } = await createNewSession(question);
+    navigate(`/chat/${sessionId}`, {
+      state: { message: question },
+    });
+    return { sessionId };
   };
 
   return (
@@ -60,7 +78,7 @@ const MainPage = () => {
           <SubGretting>안녕하세요, 손성민 님</SubGretting>
           <MainGretting>무엇을 도와드릴까요?</MainGretting>
         </GrettingSection>
-        <ChatInput setMessages={setMessages} isFetchMessages={false} />
+        <ChatInput setMessages={setMessages} isFetchMessages={false} onCreateNewSession={handleCreateNewSession} />
         <ExampleSection>
           <H2>예시 기능</H2>
           {exampleList.map((example, index) => (
