@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { Message } from '../../types/chat';
+import ReactMarkdown from 'react-markdown';
 
 interface ChatItemProps {
   message: Message;
@@ -14,7 +15,7 @@ const ChatItem = ({ message, index, setMessages, onContentUpdate }: ChatItemProp
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (!message.isStreaming) return;
+    if (!message.isStreaming || !message.answer) return;
 
     let i = 0;
     const interval = setInterval(() => {
@@ -34,29 +35,31 @@ const ChatItem = ({ message, index, setMessages, onContentUpdate }: ChatItemProp
     return () => clearInterval(interval);
   }, [message.isStreaming, message.answer, index, setMessages, onContentUpdate]);
 
-  const formatBold = (text: string) => text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-
   const renderText = (text: string) => {
-    const paragraphs = text
-      .replace(/^"|"$/g, '')
-      .replace(/\\n/g, '\n')
-      .split(/\n{2,}/);
-    return paragraphs.map((para, pIndex) => (
-      <ChatItemContent key={pIndex}>
-        {para.split('\n').map((line, lIndex, arr) => (
-          <React.Fragment key={lIndex}>
-            <span dangerouslySetInnerHTML={{ __html: formatBold(line) }} />
-            {lIndex !== arr.length - 1 && <br />}
-          </React.Fragment>
-        ))}
+    const cleanText = text
+      .replace(/^"|"$/g, '') // 앞뒤 큰따옴표 제거
+      .replace(/\\n/g, '\n'); // 이스케이프된 \n → 실제 줄바꿈
+
+    return (
+      <ChatItemContent>
+        <ReactMarkdown>{cleanText}</ReactMarkdown>
       </ChatItemContent>
-    ));
+    );
   };
 
   return (
     <>
       <ChatItemContainer $role="USER">{renderText(message.question)}</ChatItemContainer>
       <ChatItemContainer ref={scrollRef} $role="AGENT">
+        {/* 응답이 아직 없고 스트리밍 중일 때만 인디케이터 출력 */}
+        {message.answer === '' && message.isStreaming && (
+          <TypingIndicator>
+            답변 생성 중<span className="dot">.</span>
+            <span className="dot">.</span>
+            <span className="dot">.</span>
+          </TypingIndicator>
+        )}
+        {/* 답변 도착 후에는 한 글자씩 출력 */}
         {renderText(displayedContent)}
       </ChatItemContainer>
     </>
@@ -81,4 +84,38 @@ const ChatItemContainer = styled.div<{ $role: 'USER' | 'AGENT' }>`
 const ChatItemContent = styled.p`
   font-size: 0.9rem;
   margin: 0;
+  word-break: break-word; // 긴 단어 자동 줄바꿈
 `;
+
+const TypingIndicator = styled.div`
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #888;
+  display: flex;
+  align-items: center;
+
+  .dot {
+    animation: blink 1.5s infinite;
+    animation-delay: 0s;
+  }
+
+  .dot:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+
+  .dot:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+
+  @keyframes blink {
+    0%,
+    80%,
+    100% {
+      opacity: 0;
+    }
+    40% {
+      opacity: 1;
+    }
+  }
+`;
+

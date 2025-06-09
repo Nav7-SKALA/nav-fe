@@ -1,3 +1,4 @@
+
 {
   "name": "navi",
   "version": "0.1.0",
@@ -14,6 +15,7 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-icons": "^5.4.0",
+    "react-markdown": "^10.1.0",
     "react-router-dom": "^7.6.1",
     "react-scripts": "5.0.1",
     "styled-components": "^6.1.18",
@@ -51,3 +53,4 @@
     "typescript": "^4.9.5"
   }
 }
+

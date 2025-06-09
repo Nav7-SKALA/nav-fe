@@ -27,7 +27,10 @@ function Home() {
           <Link to="/login/*">로그인 페이지</Link>
         </li>
         <li>
-          <Link to="/register">회원가입 페이지</Link>
+          <Link to="/signup">회원가입 페이지</Link>
+        </li>
+        <li>
+          <Link to="/register">이메일 인증 모달</Link>
         </li>
         <li>
           <Link to="/main/*">메인 페이지</Link>

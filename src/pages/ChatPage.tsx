@@ -1,67 +1,26 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import Header from '../components/layout/Header';
 import ChatItem from '../components/chat/ChatItem';
 import ChatInput from '../components/chat/ChatInput';
 import { Message } from '../types/chat';
-import axios from 'axios';
-
-const USE_MOCK = true;
+import { fetchSessionMessages } from '../api/session';
+import useInfiniteScrolling from '../hooks/useInfiniteScrolling';
+import { sendChatMessageStreaming } from '../api/chat';
 
 const ChatPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const state = location.state as { message?: string };
+  const { sessionId } = useParams<{ sessionId: string }>();
   const [messages, setMessages] = useState<Message[]>([]);
   const [isFetchMessages, setIsFetchMessages] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  // ✅ mock 데이터 정의
-  const mockMessages: Message[] = [
-    {
-      memberMessageId: 1,
-      sessionId: 101,
-      createdAt: new Date().toISOString(),
-      lastActiveAt: new Date().toISOString(),
-      question: '안녕하세요, 무엇을 도와드릴까요?',
-      answer: '안녕하세요! 테스트 중입니다.',
-      isStreaming: false,
-    },
-    {
-      memberMessageId: 2,
-      sessionId: 101,
-      createdAt: new Date().toISOString(),
-      lastActiveAt: new Date().toISOString(),
-      question: 'TypeScript로 채팅 테스트 중이에요.',
-      answer: '좋습니다. streaming 효과도 동작할 거예요.',
-      isStreaming: false,
-    },
-  ];
-
-  useEffect(() => {
-    if (USE_MOCK) {
-      setMessages(mockMessages);
-      setIsFetchMessages(true);
-    } else {
-      fetchMessages();
-    }
-  }, []);
-
-  const fetchMessages = () => {
-    axios
-      .get(`${process.env.REACT_APP_SERVER_URL}/chat/messages`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('NaviToken')}`,
-        },
-      })
-      .then((response) => {
-        console.log('메시지 가져오기 성공:', response.data.body);
-        setMessages(response.data.body);
-        setIsFetchMessages(true);
-      })
-      .catch((error) => {
-        console.error('메시지 가져오기 오류:', error);
-      });
-  };
+  const [nextMessageId, setNextMessageId] = useState<string | null>(null);
+  const [hasNext, setHasNext] = useState(true);
+  const [isInitialMessageSent, setIsInitialMessageSent] = useState(false);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const [observerRef, setObserverRef] = React.useState<HTMLDivElement | null>(null);
 
   const scrollToBottom = () => {
     if (scrollRef.current) {
@@ -69,30 +28,111 @@ const ChatPage = () => {
     }
   };
 
-  useEffect(() => {
-    // messages가 바뀔 때마다 가장 아래로 스크롤
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages]);
+  const loadMessages = useCallback(async () => {
+    const res = await fetchSessionMessages(sessionId, nextMessageId ?? undefined);
+    setMessages((prev) => [...res.messages.reverse(), ...prev]);
+    setHasNext(res.hasNext);
+    setNextMessageId(res.nextMessageId);
+    setIsFetchMessages(true);
+  }, [sessionId, nextMessageId]);
+
+  // 초기 메시지 전송 처리
+  const sendInitialMessage = useCallback(
+    async (question: string) => {
+      if (!sessionId || isInitialMessageSent) return;
+
+      const now = new Date().toISOString();
+      const messageId = Date.now();
+
+      const message: Message = {
+        question,
+        answer: '',
+        createdAt: now,
+        lastActiveAt: now,
+        sessionId,
+        memberMessageId: messageId,
+        isStreaming: true,
+      };
+
+      setMessages((prev) => [...prev, message]);
+      setIsInitialMessageSent(true);
+
+      try {
+        const fullAnswer = await sendChatMessageStreaming(sessionId, question);
+
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.memberMessageId === messageId ? { ...msg, answer: fullAnswer, isStreaming: true } : msg
+          )
+        );
+      } catch (error) {
+        console.error('Error sending initial message:', error);
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.memberMessageId === messageId ? { ...msg, answer: '오류가 발생했습니다.', isStreaming: false } : msg
+          )
+        );
+      }
+    },
+    [sessionId, isInitialMessageSent]
+  );
+
+  useInfiniteScrolling({
+    observerRef,
+    fetchMore: loadMessages,
+    hasMore: hasNext && isFetchMessages,
+  });
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
+  // 세션 ID가 변경될 때마다 초기화
+  useEffect(() => {
+    setMessages([]);
+    setIsFetchMessages(false);
+    setNextMessageId(null);
+    setHasNext(true);
+    setIsInitialMessageSent(false);
+  }, [sessionId]);
+
+  // 메시지 로드
+  useEffect(() => {
+    if (sessionId && !isFetchMessages) {
+      loadMessages();
+    }
+  }, [sessionId, isFetchMessages, loadMessages]);
+
+  // 초기 메시지 처리 (메시지 로드 완료 후)
+  useEffect(() => {
+    if (state?.message && sessionId && isFetchMessages && !isInitialMessageSent) {
+      sendInitialMessage(state.message);
+      // state 정리하여 새로고침 시 중복 실행 방지
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [
+    state?.message,
+    sessionId,
+    isFetchMessages,
+    isInitialMessageSent,
+    sendInitialMessage,
+    navigate,
+    location.pathname,
+  ]);
+
   return (
     <ChatPageContainer>
-      <Header username={'손성민'} />
+      <Header username="손성민" />
       <ChatContainer>
         <ChatContent ref={scrollRef}>
+          <div ref={setObserverRef} style={{ height: '1px' }}></div>
           {messages.map((item, index) => {
             const currentDate = new Date(item.createdAt).toDateString();
             const prevDate = index > 0 ? new Date(messages[index - 1].createdAt).toDateString() : null;
-
             const shouldShowDate = currentDate !== prevDate;
 
             return (
-              <React.Fragment key={item.memberMessageId}>
+              <React.Fragment key={`${item.sessionId}-${item.memberMessageId}-${index}`}>
                 {shouldShowDate && (
                   <ChatDate>
                     {new Date(item.createdAt).toLocaleDateString('ko-KR', {
@@ -134,6 +174,7 @@ const ChatContainer = styled.div`
   align-items: center;
   justify-content: center;
   height: calc(100vh - 9rem);
+  overflow: hidden;
 `;
 
 const AlertComment = styled.p`
@@ -153,6 +194,6 @@ const ChatContent = styled.div`
   flex: 1;
   width: 100vw;
   margin-bottom: 0.2rem;
-  max-width: 60rem;
+  max-width: 65rem;
   overflow-y: auto;
 `;
