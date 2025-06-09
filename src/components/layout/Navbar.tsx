@@ -222,3 +222,4 @@ const Navbar = ({ sessions, onDeleteSession, onNewChat, onToggleSidebar }: Navba
 };
 
 export default Navbar;
+

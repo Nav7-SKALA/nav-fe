@@ -118,3 +118,4 @@ const TypingIndicator = styled.div`
     }
   }
 `;
+
