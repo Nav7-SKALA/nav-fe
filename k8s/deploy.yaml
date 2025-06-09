@@ -18,7 +18,13 @@ spec:
       serviceAccountName: default
       containers:
         - name: nav7-fe
-          image: amdp-registry.skala-ai.com/skala25a/sk-nav7-fe:1.0.0-4-102ec83257c4
+          image: amdp-registry.skala-ai.com/skala25a/sk-nav7-fe:1.0.0-7-2a8b18595216
+          env:
+          - name: REACT_APP_API_URL
+            valueFrom:
+              configMapKeyRef:
+                name: nav7-fe-config
+                key: REACT_APP_API_URL
           imagePullPolicy: Always
           ports:
             - containerPort: 80
