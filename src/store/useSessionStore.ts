@@ -1,11 +1,13 @@
 import { create } from 'zustand';
 import { ChatSession } from '../types/session';
-import { fetchSessions, FetchSessionParams } from '../api/session';
+import { fetchSessions } from '../api/session';
+import { sendInitChatMessage } from '../api/chat';
 
 interface SessionState {
   sessions: ChatSession[];
   hasNext: boolean;
   fetchNextSessions: () => Promise<void>;
+  createNewSession: (question: string) => Promise<{ sessionId: string }>;
   resetSessions: () => void;
   cursorAt?: string;
   cursorId?: string;
@@ -55,5 +57,23 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       cursorId: undefined,
       isLoading: false,
     });
+  },
+
+  createNewSession: async (question: string): Promise<{ sessionId: string }> => {
+    try {
+      const { sessionId } = await sendInitChatMessage(question);
+      const newSession: ChatSession = {
+        sessionId,
+        sessionTitle: question,
+        createdAt: new Date().toISOString(),
+      };
+      set((state) => ({
+        sessions: [newSession, ...state.sessions],
+      }));
+      return { sessionId };
+    } catch (error) {
+      console.error('Error creating new session:', error);
+      throw error;
+    }
   },
 }));

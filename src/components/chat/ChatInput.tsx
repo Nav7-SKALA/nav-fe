@@ -1,173 +1,82 @@
 import React, { useEffect, useState, ChangeEvent } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { FaQuestion } from 'react-icons/fa';
 import { IoSend } from 'react-icons/io5';
-import axios from 'axios';
 import { Message } from '../../types/chat';
+import { sendChatMessageStreaming } from '../../api/chat';
 
 interface ChatInputProps {
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
   isFetchMessages: boolean;
+  onCreateNewSession?: (question: string) => Promise<{ sessionId: string }>;
 }
 
-interface LocationState {
-  message?: string;
-}
-
-const USE_MOCK = true;
-
-const ChatInput = ({ setMessages, isFetchMessages }: ChatInputProps) => {
+const ChatInput = ({ setMessages, isFetchMessages, onCreateNewSession }: ChatInputProps) => {
   const location = useLocation();
-  // const state = location.state as LocationState;
-  const navigate = useNavigate();
-  const state = location.state as LocationState;
+  const { sessionId } = useParams<{ sessionId: string }>();
 
   const [isComposing, setIsComposing] = useState(false);
   const [currentPage, setCurrentPage] = useState<string>(window.location.pathname);
   const [inputValue, setInputValue] = useState('');
 
   useEffect(() => {
-    setCurrentPage(window.location.pathname);
-  }, [window.location.pathname]);
+    setCurrentPage(location.pathname);
+  }, [location.pathname]);
 
   useEffect(() => {
     setInputValue('');
   }, [currentPage]);
 
-  useEffect(() => {
-    if (USE_MOCK && isFetchMessages && currentPage === '/chat' && state?.message) {
-      simulateMessageFlow(state.message);
-    }
-  }, [isFetchMessages]);
-
-  /*
-  useEffect(() => {
-    if (isFetchMessages && currentPage === '/chat' && state?.message) {
-      const question = state.message;
-      setMessages((prev) => [
-        ...prev,
-        {
-          question,
-          answer: '',
-          createdAt: new Date().toISOString(),
-          lastActiveAt: new Date().toISOString(),
-          sessionId: 0,
-          memberMessageId: Date.now(),
-          isStreaming: true,
-        },
-      ]);
-      axios
-        .post(
-          `${process.env.REACT_APP_SERVER_URL}/chat/messages`,
-          {
-            question,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('NaviToken')}`,
-            },
-          }
-        )
-        .then((res) => {
-          const answer = res.data.body.answer;
-          setMessages((prev) =>
-            prev.map((msg, idx) => (idx === prev.length - 1 ? { ...msg, answer, isStreaming: true } : msg))
-          );
-        })
-        .catch((error) => {
-          console.error('질문 전송 오류:', error);
-          alert('질문 전송 중 오류가 발생했습니다. 다시 시도해주세요.');
-        });
-    }
-  }, [isFetchMessages]); */
-
-  const simulateMessageFlow = (question: string) => {
-    setMessages((prev) => [
-      ...prev,
-      {
-        question,
-        answer: '',
-        createdAt: new Date().toISOString(),
-        lastActiveAt: new Date().toISOString(),
-        sessionId: 0,
-        memberMessageId: Date.now(),
-        isStreaming: true,
-      },
-    ]);
-
-    setTimeout(() => {
-      const mockAnswer = `Mock 응답: "${question}"에 대한 답변입니다.`;
-      setMessages((prev) =>
-        prev.map((msg, idx) => (idx === prev.length - 1 ? { ...msg, answer: mockAnswer, isStreaming: true } : msg))
-      );
-    }, 1200);
-  };
-
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
   };
 
-  /*
-
-  const handleSubmit = (e?: React.FormEvent) => {
+  const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (inputValue.trim() === '') return;
 
     const userQuestion = inputValue;
     setInputValue('');
 
-    setMessages((prev) => [
-      ...prev,
-      {
-        question: userQuestion,
-        answer: '',
-        createdAt: new Date().toISOString(),
-        lastActiveAt: new Date().toISOString(),
-        sessionId: 0,
-        memberMessageId: Date.now(),
-        isStreaming: true,
-      },
-    ]);
+    let targetSessionId = sessionId;
+    if (!targetSessionId && onCreateNewSession) {
+      try {
+        const response = await onCreateNewSession(userQuestion);
+        targetSessionId = response.sessionId;
+        return;
+      } catch (error) {
+        console.error('Error creating new session:', error);
+      }
+    }
 
-    axios
-      .post(
-        `${process.env.REACT_APP_SERVER_URL}/chat/messages`,
-        { question: userQuestion },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('NaviToken')}`,
-          },
-        }
+    if (!targetSessionId) return;
+
+    const now = new Date().toISOString();
+    const messageId = Date.now();
+
+    const message: Message = {
+      question: userQuestion,
+      answer: '',
+      createdAt: now,
+      lastActiveAt: now,
+      sessionId: targetSessionId,
+      memberMessageId: messageId,
+      isStreaming: true,
+    };
+
+    setMessages((prev) => [...prev, message]);
+
+    const fullAnswer = await sendChatMessageStreaming(targetSessionId, userQuestion);
+
+    // ✅ 전체 answer만 한번에 넣어주면, ChatItem이 한 글자씩 보여줌
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.memberMessageId === messageId
+          ? { ...msg, answer: fullAnswer, isStreaming: true } // 타이핑 중
+          : msg
       )
-      .then((res) => {
-        const answer = res.data.body.answer;
-        setMessages((prev) =>
-          prev.map((msg, idx) => (idx === prev.length - 1 ? { ...msg, answer, isStreaming: true } : msg))
-        );
-      })
-      .catch((err) => {
-        console.error('질문 전송 오류:', err);
-        alert('질문 전송 중 오류가 발생했습니다.');
-      });
-
-    if (currentPage === '/') {
-      navigate('/chat', { state: { message: userQuestion } });
-    }
-  }; */
-
-  const handleSubmit = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (inputValue.trim() === '') return;
-
-    const userQuestion = inputValue;
-    setInputValue('');
-
-    simulateMessageFlow(userQuestion);
-
-    if (currentPage === '/' && !USE_MOCK) {
-      navigate('/chat', { state: { message: userQuestion } });
-    }
+    );
   };
 
   return (
@@ -211,16 +120,18 @@ export default ChatInput;
 const H2 = styled.h2`
   display: none;
 `;
+
 const InputSection = styled.section<{ $currentPage: string }>`
   background-color: #fff;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
   border-radius: 25px;
-  width: ${(props) => (props.$currentPage === '/chat' ? 'calc(100vw - 40px)' : '60vw')};
-  max-width: ${(props) => (props.$currentPage === '/chat' ? 'calc(60rem - 2.5rem)' : '38rem')};
+  width: ${(props) => (props.$currentPage.startsWith('/chat') ? 'calc(100vw - 40px)' : '60vw')};
+  max-width: ${(props) => (props.$currentPage.startsWith('/chat') ? 'calc(65rem - 2.5rem)' : '38rem')};
   padding: 1.5rem 1.5rem 1rem;
   box-sizing: border-box;
   margin: 0 20px;
 `;
+
 const Input = styled.input`
   margin-bottom: 1rem;
   border: none;
@@ -252,3 +163,4 @@ const Button = styled.button`
 `;
 const QuestionBtn = styled(Button)``;
 const SubmitBtn = styled(Button)``;
+
