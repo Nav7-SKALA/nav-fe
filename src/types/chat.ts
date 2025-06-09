@@ -1,6 +1,6 @@
 export interface Message {
   memberMessageId: number;
-  sessionId: number;
+  sessionId: string;
   createdAt: string;
   lastActiveAt: string;
   question: string;

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { FiSidebar, FiEdit, FiMoreHorizontal } from 'react-icons/fi';
 import { ChatSession } from '../../types/session';
@@ -135,6 +136,7 @@ const Navbar = ({ sessions, onDeleteSession, onNewChat, onToggleSidebar }: Navba
   const fetchNextSessions = useSessionStore((state) => state.fetchNextSessions);
   const hasNext = useSessionStore((state) => state.hasNext);
   const observer = useRef<IntersectionObserver | null>(null);
+  const navigate = useNavigate();
 
   const isLoading = useSessionStore((state) => state.isLoading);
   const isInitialized = useSessionStore((state) => state.isInitialized);
@@ -170,6 +172,10 @@ const Navbar = ({ sessions, onDeleteSession, onNewChat, onToggleSidebar }: Navba
     setActiveDropdown(null);
   };
 
+  const handleSessionClick = (sessionId: string) => {
+    navigate(`/chat/${sessionId}`);
+  };
+
   // 외부 클릭 감지를 위한 이벤트 리스너
   React.useEffect(() => {
     document.addEventListener('click', handleClickOutside);
@@ -194,7 +200,11 @@ const Navbar = ({ sessions, onDeleteSession, onNewChat, onToggleSidebar }: Navba
           sessions.map((session, idx) => {
             const isLast = idx === sessions.length - 1;
             return (
-              <SessionItem key={session.sessionId} ref={isLast ? lastSessionRef : null}>
+              <SessionItem
+                key={session.sessionId}
+                ref={isLast ? lastSessionRef : null}
+                onClick={() => handleSessionClick(session.sessionId)}
+              >
                 <SessionTitle>{session.sessionTitle}</SessionTitle>
                 <MoreButton onClick={(e) => handleMoreClick(session.sessionId, e)} title="더보기">
                   <FiMoreHorizontal />

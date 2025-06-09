@@ -9,7 +9,7 @@ interface LayoutState {
 
 export const useLayoutStore = create<LayoutState>((set) => ({
   isSidebarOpen: true,
-  headerType: 'default',
+  headerType: 'simple',
   toggleSidebar: () =>
     set((state) => ({
       isSidebarOpen: !state.isSidebarOpen,
