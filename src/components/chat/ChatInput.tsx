@@ -10,9 +10,10 @@ interface ChatInputProps {
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
   isFetchMessages: boolean;
   onCreateNewSession?: (question: string) => Promise<{ sessionId: string }>;
+  scrollToBottom?: () => void;
 }
 
-const ChatInput = ({ setMessages, isFetchMessages, onCreateNewSession }: ChatInputProps) => {
+const ChatInput = ({ setMessages, isFetchMessages, onCreateNewSession, scrollToBottom }: ChatInputProps) => {
   const location = useLocation();
   const { sessionId } = useParams<{ sessionId: string }>();
 
@@ -66,6 +67,8 @@ const ChatInput = ({ setMessages, isFetchMessages, onCreateNewSession }: ChatInp
     };
 
     setMessages((prev) => [...prev, message]);
+
+    setTimeout(() => scrollToBottom(), 0);
 
     const fullAnswer = await sendChatMessageStreaming(targetSessionId, userQuestion);
 
@@ -163,4 +166,3 @@ const Button = styled.button`
 `;
 const QuestionBtn = styled(Button)``;
 const SubmitBtn = styled(Button)``;
-

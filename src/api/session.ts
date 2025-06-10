@@ -58,7 +58,7 @@ export interface FetchSessionMessageResponse {
 export const fetchSessionMessages = async (
   sessionId: string,
   cursor?: string,
-  size: number = 10
+  size: number = 5
 ): Promise<FetchSessionMessageResponse> => {
   const response = await api.get(`/sessions/${sessionId}`, {
     params: { cursor, size },
@@ -91,4 +91,3 @@ export const fetchSessionMessages = async (
     nextMessageId: data.nextMessageId ?? null,
   };
 };
-

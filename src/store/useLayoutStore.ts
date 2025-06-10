@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 interface LayoutState {
   isSidebarOpen: boolean;
@@ -7,13 +8,22 @@ interface LayoutState {
   setHeaderType: (type: 'default' | 'simple') => void;
 }
 
-export const useLayoutStore = create<LayoutState>((set) => ({
-  isSidebarOpen: true,
-  headerType: 'simple',
-  toggleSidebar: () =>
-    set((state) => ({
-      isSidebarOpen: !state.isSidebarOpen,
-      headerType: state.isSidebarOpen ? 'simple' : 'default',
-    })),
-  setHeaderType: (type) => set({ headerType: type }),
-}));
+export const useLayoutStore = create<LayoutState>()(
+  persist(
+    (set, get) => ({
+      isSidebarOpen: false,
+      headerType: 'simple',
+      toggleSidebar: () => {
+        const cur = get().isSidebarOpen;
+        set({
+          isSidebarOpen: !cur,
+          headerType: cur ? 'default' : 'simple',
+        });
+      },
+      setHeaderType: (type) => set({ headerType: type }),
+    }),
+    {
+      name: 'layout-storage',
+    }
+  )
+);
