@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import { FiSidebar, FiEdit, FiMoreHorizontal } from 'react-icons/fi';
 import { ChatSession } from '../../types/session';
 import { useSessionStore } from '../../store/useSessionStore';
+import { useLayoutStore } from '../../store/useLayoutStore';
 
 interface NavbarProps {
   sessions: ChatSession[];
@@ -222,4 +223,3 @@ const Navbar = ({ sessions, onDeleteSession, onNewChat, onToggleSidebar }: Navba
 };
 
 export default Navbar;
-

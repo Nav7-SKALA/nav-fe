@@ -129,6 +129,7 @@ const MainPageContainer = styled.div`
   min-width: 100vw;
   width: 100%;
   height: 100vh;
+  overflow-x: hidden;
   background-image: url(${MainBackground});
   background-size: cover;
   background-position: center;
@@ -160,7 +161,7 @@ const MainContent = styled.section<{ isSidebarOpen: boolean }>`
   height: calc(100vh - 80px);
   padding-bottom: 15vh;
   margin-left: ${(props) => (props.isSidebarOpen ? '250px' : '0')}; /* 사이드바 너비만큼 마진 */
-  transition: margin-left 0.3s ease;
+  transition: margin-left 0.5s ease;
 `;
 
 const GrettingSection = styled.section`

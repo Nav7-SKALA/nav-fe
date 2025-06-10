@@ -20,7 +20,8 @@ const ChatPage = () => {
   const [hasNext, setHasNext] = useState(true);
   const [isInitialMessageSent, setIsInitialMessageSent] = useState(false);
   const scrollRef = useRef<HTMLDivElement | null>(null);
-  const [observerRef, setObserverRef] = React.useState<HTMLDivElement | null>(null);
+  const observerRef = useRef<HTMLDivElement | null>(null);
+  const [isInitialScrollDone, setIsInitialScrollDone] = useState(false);
 
   const scrollToBottom = () => {
     if (scrollRef.current) {
@@ -29,11 +30,20 @@ const ChatPage = () => {
   };
 
   const loadMessages = useCallback(async () => {
+    if (!scrollRef.current) return;
+    const previousHeight = scrollRef.current.scrollHeight;
+
     const res = await fetchSessionMessages(sessionId, nextMessageId ?? undefined);
     setMessages((prev) => [...res.messages.reverse(), ...prev]);
     setHasNext(res.hasNext);
     setNextMessageId(res.nextMessageId);
     setIsFetchMessages(true);
+
+    setTimeout(() => {
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight - previousHeight;
+      }
+    }, 0);
   }, [sessionId, nextMessageId]);
 
   // 초기 메시지 전송 처리
@@ -57,6 +67,8 @@ const ChatPage = () => {
       setMessages((prev) => [...prev, message]);
       setIsInitialMessageSent(true);
 
+      setTimeout(() => scrollToBottom(), 0);
+
       try {
         const fullAnswer = await sendChatMessageStreaming(sessionId, question);
 
@@ -78,14 +90,17 @@ const ChatPage = () => {
   );
 
   useInfiniteScrolling({
-    observerRef,
+    observerRef: observerRef.current,
     fetchMore: loadMessages,
     hasMore: hasNext && isFetchMessages,
   });
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    if (isFetchMessages && !isInitialScrollDone) {
+      scrollToBottom();
+      setIsInitialScrollDone(true);
+    }
+  }, [isFetchMessages, isInitialScrollDone]);
 
   // 세션 ID가 변경될 때마다 초기화
   useEffect(() => {
@@ -94,6 +109,7 @@ const ChatPage = () => {
     setNextMessageId(null);
     setHasNext(true);
     setIsInitialMessageSent(false);
+    setIsInitialScrollDone(false);
   }, [sessionId]);
 
   // 메시지 로드
@@ -125,7 +141,7 @@ const ChatPage = () => {
       <Header username="손성민" />
       <ChatContainer>
         <ChatContent ref={scrollRef}>
-          <div ref={setObserverRef} style={{ height: '1px' }}></div>
+          <div ref={observerRef} style={{ height: '1px' }}></div>
           {messages.map((item, index) => {
             const currentDate = new Date(item.createdAt).toDateString();
             const prevDate = index > 0 ? new Date(messages[index - 1].createdAt).toDateString() : null;
@@ -149,7 +165,7 @@ const ChatPage = () => {
           })}
         </ChatContent>
       </ChatContainer>
-      <ChatInput setMessages={setMessages} isFetchMessages={isFetchMessages} />
+      <ChatInput setMessages={setMessages} isFetchMessages={isFetchMessages} scrollToBottom={scrollToBottom} />
       <AlertComment>Navi는 실수를 할 수 있습니다. 중요한 정보는 재차 확인하세요.</AlertComment>
     </ChatPageContainer>
   );
