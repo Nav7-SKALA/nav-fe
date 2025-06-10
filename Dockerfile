@@ -1,6 +1,8 @@
 # 1단계: Node 이미지에서 React 앱 빌드
 FROM node:20-alpine AS builder
 
+ENV REACT_APP_API_URL=https://sk-nav7.skala25a.project.skala-ai.com/api/v1/
+
 WORKDIR /app
 
 # package.json, package-lock.json 복사 후 의존성 설치
