@@ -6,7 +6,8 @@ import CommonForm from '../components/login/CommonForm';
 
 const LoginPage = () => {
   const location = useLocation()
-  const pageType = location.pathname.startsWith('/login') ? 'login' : 'signup'
+  const pageType = location.pathname.startsWith('/signup') ? 'signup' : 'login'
+  // const pageType = location.pathname.startsWith('/login') ? 'login' : 'signup'
   return (
     <LoginPageContainer>
       <Circle1 $pageType={pageType} />

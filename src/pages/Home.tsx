@@ -48,9 +48,9 @@ function Home() {
           <Link to="/rolemodelchat/*">롤모델 채팅 페이지</Link>
         </li>
       </ul>
-      <button onClick={handleLoginTest} style={{ marginTop: '20px' }}>
+      {/* <button onClick={handleLoginTest} style={{ marginTop: '20px' }}>
         🔐 로그인 테스트
-      </button>
+      </button> */}
     </div>
   );
 }

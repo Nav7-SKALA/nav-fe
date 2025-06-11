@@ -1,7 +1,7 @@
 import api from './index';
 
-export const signup = async (loginId: string, password: string, email: string, memeberName: string, gender: string) => {
-  const response = await api.post('/auth/login', { loginId, password, email, memeberName, gender }, { withCredentials: true });
+export const signup = async (loginId: string, password: string, email: string, memberName: string, gender: string) => {
+  const response = await api.post('/auth/signup', { loginId, password, email, memberName, gender }, { withCredentials: true });
   return response.data;
 };
 
@@ -16,11 +16,15 @@ return response.data;
 };
   
 export const make_code = async (email: string) => {
-    const response = await api.post('/auth/email/send', { email }, { withCredentials: true });
-    return response.data;
-    };
+  const response = await api.post(`/auth/email/send?email=${encodeURIComponent(email)}`, null, { withCredentials: true });
+  return response.data;
+};
 
 export const duplicate_code = async (email: string, code: string) => {
-    const response = await api.post('/auth/email/verify', { email, code }, { withCredentials: true });
-    return response.data;
-    };
+  const response = await api.post(
+      `/auth/email/verify?email=${encodeURIComponent(email)}&code=${encodeURIComponent(code)}`,
+      null,
+      { withCredentials: true }
+  );
+  return response.data;
+};
