@@ -37,7 +37,7 @@ const CodeVerificationModal: React.FC<Props> = ({ email, onSuccess, onClose }) =
     try{
       if (finalCode.length === 6) {
         const response = await duplicate_code(email,finalCode);
-        if (response.success) {
+        if (response.result) {
           alert('이메일 인증이 완료되었습니다.');
           onSuccess();
         } else {
@@ -80,7 +80,7 @@ const CodeVerificationModal: React.FC<Props> = ({ email, onSuccess, onClose }) =
           ))}
         </InputGroup>
 
-        <SubmitButton onClick={handleSubmit}>제출하기</SubmitButton>
+        <SubmitButton type="button" onClick={handleSubmit}>제출하기</SubmitButton>
       </ModalContainer>
     </Overlay>
   );

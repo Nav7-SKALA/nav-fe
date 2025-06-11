@@ -55,7 +55,7 @@ interface CommonFormProps {
         let available;
         if (checkType === 'userId') {
           const response = await duplicate_Id(value);
-          available = response.isSuccess;
+          available = response.isSuccess;          
         } else {
           const response = await duplicate_Email(value);
           available = response.isSuccess;
@@ -231,7 +231,7 @@ interface CommonFormProps {
       try {
         const response = await login(userId, password)
         alert(`로그인 성공! 사용자 이름: ${response.loginId || 'N/A'}`)
-        navigate('/')
+        navigate('/main')
       } catch (error: any) {
         alert('로그인 실패: ' + (error.response?.message || error.message))
       }
@@ -358,6 +358,7 @@ interface CommonFormProps {
               isCheckable={input.isCheckable} 
               checkType={input.checkType}
               isPasswordMatch={input.isPasswordMatch}
+              onCheck={input.onCheck}
               />
             ))}
         <Button type="submit">
