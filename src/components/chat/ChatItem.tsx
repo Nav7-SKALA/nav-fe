@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { Message } from '../../types/chat';
 import RoleModelCard from './RoleModelCard';
-import { RoleModel } from '../../types/roleModel';
 import ReactMarkdown from 'react-markdown';
 
 interface ChatItemProps {
@@ -11,14 +10,23 @@ interface ChatItemProps {
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
   onContentUpdate?: () => void;
   isNewMessage?: boolean;
+  isLoadingPreviousChats?: boolean; // 이전 채팅 로딩 중인지 구분
 }
 
-const ChatItem = ({ message, index, setMessages, onContentUpdate, isNewMessage }: ChatItemProps) => {
+const ChatItem = ({
+  message,
+  index,
+  setMessages,
+  onContentUpdate,
+  isNewMessage = false,
+  isLoadingPreviousChats = false,
+}: ChatItemProps) => {
   const [displayedContent, setDisplayedContent] = useState(message.isStreaming ? '' : message.answer);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [showRoleModels, setShowRoleModels] = useState(false);
   const roleModelRef = useRef<HTMLDivElement | null>(null);
 
+  // 스트리밍 처리
   useEffect(() => {
     if (!message.isStreaming || !message.answer) return;
 
@@ -40,24 +48,44 @@ const ChatItem = ({ message, index, setMessages, onContentUpdate, isNewMessage }
     return () => clearInterval(interval);
   }, [message.isStreaming, message.answer, index, setMessages, onContentUpdate]);
 
+  // 롤모델 카드 표시 처리
   useEffect(() => {
-    if (!message.isStreaming && message.roleModels?.length > 0) {
-      const timer = setTimeout(() => {
+    if (message.roleModels?.length > 0) {
+      if (isLoadingPreviousChats) {
+        // 이전 채팅 로딩 시 즉시 표시 (애니메이션 없음)
         setShowRoleModels(true);
-      }, 200); // 0.2초 후 등장
+      } else if (!message.isStreaming) {
+        // 새로운 메시지의 경우 스트리밍 완료 후 딜레이와 함께 표시
+        const timer = setTimeout(() => {
+          setShowRoleModels(true);
+        }, 200);
 
-      return () => {
-        clearTimeout(timer);
-        setShowRoleModels(false);
-      };
+        return () => {
+          clearTimeout(timer);
+        };
+      }
     }
-  }, [message.isStreaming, message.roleModels]);
 
+    // 컴포넌트 언마운트 시 정리
+    return () => {
+      setShowRoleModels(false);
+    };
+  }, [message.isStreaming, message.roleModels, isLoadingPreviousChats]);
+
+  // 새로운 메시지의 롤모델 카드만 스크롤
   useEffect(() => {
-    if (showRoleModels && roleModelRef.current && isNewMessage) {
-      roleModelRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (showRoleModels && roleModelRef.current && isNewMessage && !isLoadingPreviousChats) {
+      // 약간의 딜레이를 주어 애니메이션과 함께 스크롤
+      const scrollTimer = setTimeout(() => {
+        roleModelRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest', // 'end' 대신 'nearest'로 변경하여 불필요한 스크롤 방지
+        });
+      }, 100);
+
+      return () => clearTimeout(scrollTimer);
     }
-  }, [showRoleModels, isNewMessage]);
+  }, [showRoleModels, isNewMessage, isLoadingPreviousChats]);
 
   const renderText = (text: string) => {
     const cleanText = text
@@ -86,7 +114,10 @@ const ChatItem = ({ message, index, setMessages, onContentUpdate, isNewMessage }
         {/* 답변 도착 후에는 한 글자씩 출력 */}
         {renderText(displayedContent)}
         {showRoleModels && (
-          <FadeInContainer ref={roleModelRef}>
+          <FadeInContainer
+            ref={roleModelRef}
+            $skipAnimation={isLoadingPreviousChats} // 이전 채팅 로딩 시 애니메이션 스킵
+          >
             <RoleModelCard roleModels={message.roleModels} />
           </FadeInContainer>
         )}
@@ -148,8 +179,12 @@ const TypingIndicator = styled.div`
   }
 `;
 
-const FadeInContainer = styled.div`
-  animation: fadeIn 0.4s ease-in-out;
+const FadeInContainer = styled.div<{ $skipAnimation?: boolean }>`
+  ${({ $skipAnimation }) =>
+    !$skipAnimation &&
+    `
+    animation: fadeIn 0.4s ease-in-out;
+  `}
 
   @keyframes fadeIn {
     0% {

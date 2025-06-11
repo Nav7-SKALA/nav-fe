@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 type Props = {
   observerRef: HTMLDivElement | null;
@@ -7,7 +7,8 @@ type Props = {
 };
 
 const options: IntersectionObserverInit = {
-  threshold: 1,
+  threshold: 0.1, // threshold를 낮춰서 더 안정적으로
+  rootMargin: '50px', // 50px 여유분을 두어 미리 로딩
 };
 
 /*
@@ -19,29 +20,43 @@ const options: IntersectionObserverInit = {
  */
 
 const useInfiniteScrolling = ({ observerRef, fetchMore, hasMore }: Props) => {
+  const isFetchingRef = useRef(false);
+
   // 뷰포트 내에 감시하는 태그가 들어왔다면 패치
   const onScroll: IntersectionObserverCallback = useCallback(
-    (entries, observer) => {
-      if (!entries[0].isIntersecting) return;
+    async (entries) => {
+      const entry = entries[0];
 
-      fetchMore();
+      // 교집합이 없거나, 이미 fetching 중이거나, hasMore가 false면 return
+      if (!entry.isIntersecting || isFetchingRef.current || !hasMore) {
+        return;
+      }
+
+      isFetchingRef.current = true;
+
+      try {
+        await fetchMore();
+      } catch (error) {
+        console.error('Error in infinite scroll fetch:', error);
+      } finally {
+        // 데이터 로딩 완료 후 지연시간을 두어 스크롤 위치와 DOM이 안정화되도록 함
+        setTimeout(() => {
+          isFetchingRef.current = false;
+        }, 300);
+      }
     },
     [fetchMore, hasMore]
   );
 
   useEffect(() => {
-    if (!observerRef) return;
+    if (!observerRef || !hasMore) return;
 
-    // 콜백함수와 옵션값 지정
-    let observer = new IntersectionObserver(onScroll, options);
-    // 특정 요소 감시 시작
+    const observer = new IntersectionObserver(onScroll, options);
     observer.observe(observerRef);
 
-    // 더 가져올 게시글이 존재하지 않는다면 패치 중지
-    if (!hasMore) observer.unobserve(observerRef);
-
-    // 감시 종료
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+    };
   }, [observerRef, onScroll, hasMore]);
 
   return;
