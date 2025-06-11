@@ -22,6 +22,7 @@ const ChatPage = () => {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const observerRef = useRef<HTMLDivElement | null>(null);
   const [isInitialScrollDone, setIsInitialScrollDone] = useState(false);
+  const [latestMessageId, setLatestMessageId] = useState<number | null>(null);
 
   const scrollToBottom = () => {
     if (scrollRef.current) {
@@ -66,15 +67,18 @@ const ChatPage = () => {
 
       setMessages((prev) => [...prev, message]);
       setIsInitialMessageSent(true);
+      setLatestMessageId(messageId);
 
       setTimeout(() => scrollToBottom(), 0);
 
       try {
-        const fullAnswer = await sendChatMessageStreaming(sessionId, question);
+        const fullAnswer = await sendChatMessageStreaming(sessionId, question, messageId);
 
         setMessages((prev) =>
           prev.map((msg) =>
-            msg.memberMessageId === messageId ? { ...msg, answer: fullAnswer, isStreaming: true } : msg
+            msg.memberMessageId === fullAnswer.memberMessageId
+              ? { ...msg, answer: fullAnswer.answer, isStreaming: true, roleModels: fullAnswer.roleModels }
+              : msg
           )
         );
       } catch (error) {
@@ -110,6 +114,7 @@ const ChatPage = () => {
     setHasNext(true);
     setIsInitialMessageSent(false);
     setIsInitialScrollDone(false);
+    setLatestMessageId(null);
   }, [sessionId]);
 
   // 메시지 로드
@@ -146,6 +151,7 @@ const ChatPage = () => {
             const currentDate = new Date(item.createdAt).toDateString();
             const prevDate = index > 0 ? new Date(messages[index - 1].createdAt).toDateString() : null;
             const shouldShowDate = currentDate !== prevDate;
+            const isLatestMessage = latestMessageId === item.memberMessageId;
 
             return (
               <React.Fragment key={`${item.sessionId}-${item.memberMessageId}-${index}`}>
@@ -159,13 +165,24 @@ const ChatPage = () => {
                     })}
                   </ChatDate>
                 )}
-                <ChatItem message={item} index={index} setMessages={setMessages} onContentUpdate={scrollToBottom} />
+                <ChatItem
+                  message={item}
+                  index={index}
+                  setMessages={setMessages}
+                  onContentUpdate={scrollToBottom}
+                  isNewMessage={index === messages.length - 1}
+                />
               </React.Fragment>
             );
           })}
         </ChatContent>
       </ChatContainer>
-      <ChatInput setMessages={setMessages} isFetchMessages={isFetchMessages} scrollToBottom={scrollToBottom} />
+      <ChatInput
+        setMessages={setMessages}
+        isFetchMessages={isFetchMessages}
+        scrollToBottom={scrollToBottom}
+        setLatestMessageId={setLatestMessageId}
+      />
       <AlertComment>Navi는 실수를 할 수 있습니다. 중요한 정보는 재차 확인하세요.</AlertComment>
     </ChatPageContainer>
   );

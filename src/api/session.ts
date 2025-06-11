@@ -1,6 +1,7 @@
 import api from './index';
 import { ChatSession } from '../types/session';
 import { Message } from '../types/chat';
+import { RoleModel } from '../types/roleModel';
 
 export interface FetchSessionParams {
   cursorAt?: string;
@@ -69,17 +70,31 @@ export const fetchSessionMessages = async (
 
   const cleanedMessages = (data.messages ?? []).map((msg: Message) => {
     let cleanedAnswer = msg.answer;
+    let roleModels: RoleModel[] = [];
 
     try {
       const parsed = JSON.parse(cleanedAnswer);
-      if (parsed?.response && typeof parsed.response === 'string') {
+      if (parsed?.response && Array.isArray(parsed.response)) {
+        // 롤모델로 추정되는 응답일 경우
+        roleModels = parsed.response.map((item: any) => ({
+          years: item.years && !isNaN(Number(item.years)) ? Number(item.years) : 0,
+          careerTitle: item.careerTitle ?? '엔지니어',
+          name: item.name ?? '이름 없음',
+        }));
+        cleanedAnswer = '추천 롤모델을 확인해보세요!';
+      } else if (parsed?.response && typeof parsed.response === 'string') {
+        // 일반 텍스트 응답일 경우
         cleanedAnswer = parsed.response;
       }
     } catch (e) {
-      // 파싱 실패하면 그대로 둠
+      // JSON 파싱 실패하면 일반 텍스트 응답
     }
 
-    return { ...msg, answer: cleanedAnswer };
+    return {
+      ...msg,
+      answer: cleanedAnswer,
+      roleModels: roleModels.length > 0 ? roleModels : undefined, // ✅ 빈 배열이면 undefined로 처리
+    };
   });
 
   return {

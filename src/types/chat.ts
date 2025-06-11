@@ -1,3 +1,4 @@
+import { RoleModel } from './roleModel';
 export interface Message {
   memberMessageId: number;
   sessionId: string;
@@ -6,4 +7,5 @@ export interface Message {
   question: string;
   answer: string;
   isStreaming?: boolean;
+  roleModels?: RoleModel[];
 }
