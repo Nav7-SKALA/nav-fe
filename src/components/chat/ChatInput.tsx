@@ -11,9 +11,16 @@ interface ChatInputProps {
   isFetchMessages: boolean;
   onCreateNewSession?: (question: string) => Promise<{ sessionId: string }>;
   scrollToBottom?: () => void;
+  setLatestMessageId?: React.Dispatch<React.SetStateAction<number | null>>;
 }
 
-const ChatInput = ({ setMessages, isFetchMessages, onCreateNewSession, scrollToBottom }: ChatInputProps) => {
+const ChatInput = ({
+  setMessages,
+  isFetchMessages,
+  onCreateNewSession,
+  scrollToBottom,
+  setLatestMessageId,
+}: ChatInputProps) => {
   const location = useLocation();
   const { sessionId } = useParams<{ sessionId: string }>();
 
@@ -67,16 +74,17 @@ const ChatInput = ({ setMessages, isFetchMessages, onCreateNewSession, scrollToB
     };
 
     setMessages((prev) => [...prev, message]);
+    setLatestMessageId(messageId);
 
     setTimeout(() => scrollToBottom(), 0);
 
-    const fullAnswer = await sendChatMessageStreaming(targetSessionId, userQuestion);
+    const fullAnswer = await sendChatMessageStreaming(targetSessionId, userQuestion, messageId);
 
     // ✅ 전체 answer만 한번에 넣어주면, ChatItem이 한 글자씩 보여줌
     setMessages((prev) =>
       prev.map((msg) =>
-        msg.memberMessageId === messageId
-          ? { ...msg, answer: fullAnswer, isStreaming: true } // 타이핑 중
+        msg.memberMessageId === fullAnswer.memberMessageId
+          ? { ...msg, answer: fullAnswer.answer, isStreaming: true, roleModels: fullAnswer.roleModels } // 타이핑 중
           : msg
       )
     );

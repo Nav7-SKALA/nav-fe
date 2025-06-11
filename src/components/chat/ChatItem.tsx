@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { Message } from '../../types/chat';
+import RoleModelCard from './RoleModelCard';
+import { RoleModel } from '../../types/roleModel';
 import ReactMarkdown from 'react-markdown';
 
 interface ChatItemProps {
@@ -8,11 +10,14 @@ interface ChatItemProps {
   index: number;
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
   onContentUpdate?: () => void;
+  isNewMessage?: boolean;
 }
 
-const ChatItem = ({ message, index, setMessages, onContentUpdate }: ChatItemProps) => {
+const ChatItem = ({ message, index, setMessages, onContentUpdate, isNewMessage }: ChatItemProps) => {
   const [displayedContent, setDisplayedContent] = useState(message.isStreaming ? '' : message.answer);
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const [showRoleModels, setShowRoleModels] = useState(false);
+  const roleModelRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (!message.isStreaming || !message.answer) return;
@@ -34,6 +39,25 @@ const ChatItem = ({ message, index, setMessages, onContentUpdate }: ChatItemProp
 
     return () => clearInterval(interval);
   }, [message.isStreaming, message.answer, index, setMessages, onContentUpdate]);
+
+  useEffect(() => {
+    if (!message.isStreaming && message.roleModels?.length > 0) {
+      const timer = setTimeout(() => {
+        setShowRoleModels(true);
+      }, 200); // 0.2초 후 등장
+
+      return () => {
+        clearTimeout(timer);
+        setShowRoleModels(false);
+      };
+    }
+  }, [message.isStreaming, message.roleModels]);
+
+  useEffect(() => {
+    if (showRoleModels && roleModelRef.current && isNewMessage) {
+      roleModelRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [showRoleModels, isNewMessage]);
 
   const renderText = (text: string) => {
     const cleanText = text
@@ -61,6 +85,11 @@ const ChatItem = ({ message, index, setMessages, onContentUpdate }: ChatItemProp
         )}
         {/* 답변 도착 후에는 한 글자씩 출력 */}
         {renderText(displayedContent)}
+        {showRoleModels && (
+          <FadeInContainer ref={roleModelRef}>
+            <RoleModelCard roleModels={message.roleModels} />
+          </FadeInContainer>
+        )}
       </ChatItemContainer>
     </>
   );
@@ -119,3 +148,17 @@ const TypingIndicator = styled.div`
   }
 `;
 
+const FadeInContainer = styled.div`
+  animation: fadeIn 0.4s ease-in-out;
+
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+`;
