@@ -24,7 +24,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   isInitialized: false,
 
   fetchNextSessions: async () => {
-    const { sessions, hasNext, cursorAt, cursorId, isLoading } = get();
+    const { hasNext, cursorAt, cursorId, isLoading } = get();
     if (!hasNext || isLoading) return;
     set({ isLoading: true });
     try {

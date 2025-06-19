@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from '../pages/Home';
@@ -10,6 +9,7 @@ import RegisterPage from '../pages/RegisterPage';
 import ChatPage from '../pages/ChatPage';
 import RoleModelChatPage from '../pages/RoleModelChatPage';
 import RoleModelPage from '../pages/RoleModelPage';
+import ProfilePage from '../pages/ProfilePage';
 
 function AppRouter() {
   return (
@@ -26,10 +26,10 @@ function AppRouter() {
         <Route path="/chat/:sessionId" element={<ChatPage />} />
         <Route path="/rolemodel/*" element={<RoleModelPage />} />
         <Route path="/rolemodelchat/*" element={<RoleModelChatPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
       </Routes>
     </BrowserRouter>
   );
 }
 
 export default AppRouter;
-
