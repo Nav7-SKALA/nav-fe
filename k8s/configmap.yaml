@@ -3,4 +3,5 @@ kind: ConfigMap
 metadata:
   name: nav7-fe-config
 data:
-  REACT_APP_API_URL: "https://sk-nav7.skala25a.project.skala-ai.com/api/v1/"
+  REACT_APP_API_URL: 'https://sk-nav7.skala25a.project.skala-ai.com/api/v1/'
+  REACT_APP_ENCRYPTION_KEY: 'Sknav7_!Key__AES_92'
