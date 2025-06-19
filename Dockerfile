@@ -2,9 +2,8 @@
 FROM node:20-alpine AS builder
 
 # 여기에 환경변수 추가 (빌드 타임용)
-ENV \
-  REACT_APP_API_URL=https://sk-nav7.skala25a.project.skala-ai.com/api/v1/ \
-  REACT_APP_ENCRYPTION_KEY=Sknav7_!Key__AES_92
+ENV REACT_APP_API_URL=https://sk-nav7.skala25a.project.skala-ai.com/api/v1/ 
+ENV REACT_APP_ENCRYPTION_KEY=Sknav7_!Key__AES_92
 
 WORKDIR /app
 
