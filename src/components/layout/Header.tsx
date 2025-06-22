@@ -26,12 +26,12 @@ const Header = ({ type = 'default', username, onSidebarToggle, isSidebarOpen }: 
   };
 
   return (
-    <HeaderContainer type={type} isSidebarOpen={isSidebarOpen}>
+    <HeaderContainer $type={type} $isSidebarOpen={isSidebarOpen}>
       <LeftSection>
         {type === 'default' && (
           <>
             <IconBtn onClick={onSidebarToggle}>
-              <FiSidebar size={30} />
+              <FiSidebar size={28} />
             </IconBtn>
             <IconBtn>
               <FiEdit size={28} />
@@ -57,11 +57,11 @@ const Header = ({ type = 'default', username, onSidebarToggle, isSidebarOpen }: 
 
 export default Header;
 
-const HeaderContainer = styled.section<{ type: string; isSidebarOpen?: boolean }>`
+const HeaderContainer = styled.section<{ $type: string; $isSidebarOpen?: boolean }>`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: ${(props) => (props.isSidebarOpen ? 'calc(100% - 250px)' : '100%')};
+  width: ${(props) => (props.$isSidebarOpen ? 'calc(100% - 250px)' : '100%')};
   // width: 100%;
   padding: 1rem 1rem;
   box-sizing: border-box;

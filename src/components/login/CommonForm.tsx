@@ -8,7 +8,7 @@ import { HiMail } from 'react-icons/hi';
 import { FaCircleUser, FaHeart } from 'react-icons/fa6';
 import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 import Select from 'react-select';
-import { login } from '../../api/login';
+import { login as loginApi } from '../../api/login';
 import { signup, duplicate_Email, duplicate_Id, make_code } from '../../api/signup';
 import CodeVerificationModal from '../modal/signup/CodeVerificationModal';
 import { useUserStore } from '../../store/useUserStore';
@@ -219,8 +219,9 @@ const CommonForm = ({ pageType }: CommonFormProps) => {
         alert('회원가입이 완료되었습니다.');
         // 회원가입 후 자동 로그인
         try {
-          const loginResponse = await login(userId, password);
-          setUser(loginResponse.memberId, loginResponse.profileId, loginResponse.name, loginResponse.gender);
+          const loginResponse = await loginApi(userId, password);
+          const { memberId, profileId, memberName, gender } = loginResponse.result;
+          setUser(memberId, profileId, memberName, gender);
         } catch (error) {
           alert('로그인 실패: ' + (error.response?.message || error.message));
           return;
@@ -243,8 +244,9 @@ const CommonForm = ({ pageType }: CommonFormProps) => {
 
   const handleLogin = async () => {
     try {
-      const response = await login(userId, password);
-      setUser(response.memberId, response.profileId, response.name, response.gender);
+      const response = await loginApi(userId, password);
+      const { memberId, profileId, memberName, gender } = response.result;
+      setUser(memberId, profileId, memberName, gender);
       navigate('/main');
     } catch (error: any) {
       alert('로그인 실패: ' + (error.response?.message || error.message));
