@@ -11,7 +11,7 @@ interface LayoutState {
 export const useLayoutStore = create<LayoutState>()(
   persist(
     (set, get) => ({
-      isSidebarOpen: false,
+      isSidebarOpen: true,
       headerType: 'simple',
       toggleSidebar: () => {
         const cur = get().isSidebarOpen;
