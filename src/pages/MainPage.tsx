@@ -8,6 +8,7 @@ import { Message } from '../types/chat';
 import { PathImg, PencilImg, RoleModelImg } from '../assets/main';
 import { useLayoutStore } from '../store/useLayoutStore';
 import { useSessionStore } from '../store/useSessionStore';
+import { useUserStore } from '../store/useUserStore';
 import Navbar from '../components/layout/Navbar';
 import { deleteSession } from '../api/session';
 
@@ -19,6 +20,7 @@ const MainPage = () => {
   // ✅ zustand 상태 추출
   const { isSidebarOpen, headerType, toggleSidebar, setHeaderType } = useLayoutStore();
   const { sessions, resetSessions, fetchNextSessions } = useSessionStore();
+  const { memberName } = useUserStore();
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -70,12 +72,12 @@ const MainPage = () => {
             onToggleSidebar={toggleSidebar}
           />
         )}
-        <Header username="손성민" type={headerType} onSidebarToggle={toggleSidebar} isSidebarOpen={isSidebarOpen} />
+        <Header username={memberName} type={headerType} onSidebarToggle={toggleSidebar} isSidebarOpen={isSidebarOpen} />
       </TopSection>
-      <MainContent isSidebarOpen={isSidebarOpen}>
+      <MainContent $isSidebarOpen={isSidebarOpen}>
         <GrettingSection>
           <H1>메인 화면</H1>
-          <SubGretting>안녕하세요, 손성민 님</SubGretting>
+          <SubGretting>안녕하세요, {memberName} 님</SubGretting>
           <MainGretting>무엇을 도와드릴까요?</MainGretting>
         </GrettingSection>
         <ChatInput setMessages={setMessages} isFetchMessages={false} onCreateNewSession={handleCreateNewSession} />
@@ -151,7 +153,7 @@ const TopSection = styled.div`
 //   height: calc(100vh - 80px);
 //   padding-bottom: 15vh;
 // `;
-const MainContent = styled.section<{ isSidebarOpen: boolean }>`
+const MainContent = styled.section<{ $isSidebarOpen: boolean }>`
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -160,7 +162,7 @@ const MainContent = styled.section<{ isSidebarOpen: boolean }>`
   width: 100%;
   height: calc(100vh - 80px);
   padding-bottom: 15vh;
-  margin-left: ${(props) => (props.isSidebarOpen ? '250px' : '0')}; /* 사이드바 너비만큼 마진 */
+  margin-left: ${(props) => (props.$isSidebarOpen ? '250px' : '0')}; /* 사이드바 너비만큼 마진 */
   transition: margin-left 0.5s ease;
 `;
 
@@ -214,12 +216,12 @@ const ExampleContainer = styled.div`
   padding: 0.5rem 1.2rem 0.8rem;
 `;
 
-const ExampleContent = styled.p`
+const ExampleContent = styled.div`
   display: flex;
   width: 100% !important;
   justify-content: space-between !important;
   box-sizing: border-box;
-  padding: 0 0.3rem;
+  padding: 0.8rem 0.3rem;
   align-items: center;
   justify-content: center;
 `;
