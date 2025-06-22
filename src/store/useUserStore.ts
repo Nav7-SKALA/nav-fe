@@ -5,9 +5,9 @@ interface UserState {
   isLoggedIn: boolean;
   memberId: number;
   profileId: number;
-  name: string;
+  memberName: string;
   gender: string;
-  login: (memberId: number, profileId: number, name: string, gender: string) => void;
+  login: (memberId: number, profileId: number, memberName: string, gender: string) => void;
   logout: () => void;
 }
 
@@ -17,10 +17,11 @@ export const useUserStore = create<UserState>()(
       isLoggedIn: false,
       memberId: 0,
       profileId: 0,
-      name: '',
+      memberName: '',
       gender: 'MALE',
-      login: (memberId, profileId, name, gender) => set({ isLoggedIn: true, memberId, profileId, name, gender }),
-      logout: () => set({ isLoggedIn: false, memberId: 0, profileId: 0, name: '' }),
+      login: (memberId, profileId, memberName, gender) =>
+        set({ isLoggedIn: true, memberId, profileId, memberName, gender }),
+      logout: () => set({ isLoggedIn: false, memberId: 0, profileId: 0, memberName: '' }),
     }),
     {
       name: 'user-storage',

@@ -4,7 +4,6 @@ import styled from 'styled-components';
 import { FiSidebar, FiEdit, FiMoreHorizontal } from 'react-icons/fi';
 import { ChatSession } from '../../types/session';
 import { useSessionStore } from '../../store/useSessionStore';
-import { useLayoutStore } from '../../store/useLayoutStore';
 
 interface NavbarProps {
   sessions: ChatSession[];
@@ -27,9 +26,11 @@ const NavbarHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
+  padding: 1rem;
   border-bottom: 0.5px solid #5f6368;
   background-color: #ffe1e1;
+  box-sizing: border-box;
+  height: 80px;
 `;
 
 const IconButton = styled.button`
@@ -48,8 +49,8 @@ const IconButton = styled.button`
   }
 
   svg {
-    width: 20px;
-    height: 20px;
+    width: 28px;
+    height: 28px;
     color: #5f6368;
   }
 `;
@@ -96,7 +97,7 @@ const MoreButton = styled(IconButton)`
   }
 `;
 
-const DropdownMenu = styled.div<{ show: boolean }>`
+const DropdownMenu = styled.div<{ $show: boolean }>`
   position: absolute;
   right: 8px;
   top: 100%;
@@ -106,7 +107,7 @@ const DropdownMenu = styled.div<{ show: boolean }>`
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   z-index: 1000;
   min-width: 120px;
-  display: ${(props) => (props.show ? 'block' : 'none')};
+  display: ${(props) => (props.$show ? 'block' : 'none')};
 `;
 
 const DropdownItem = styled.button`
@@ -211,7 +212,7 @@ const Navbar = ({ sessions, onDeleteSession, onNewChat, onToggleSidebar }: Navba
                   <FiMoreHorizontal />
                 </MoreButton>
 
-                <DropdownMenu show={activeDropdown === session.sessionId}>
+                <DropdownMenu $show={activeDropdown === session.sessionId}>
                   <DropdownItem onClick={(e) => handleDeleteClick(session.sessionId, e)}>삭제</DropdownItem>
                 </DropdownMenu>
               </SessionItem>
