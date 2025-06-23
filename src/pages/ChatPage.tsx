@@ -8,6 +8,11 @@ import { Message } from '../types/chat';
 import { fetchSessionMessages } from '../api/session';
 import useInfiniteScrolling from '../hooks/useInfiniteScrolling';
 import { sendChatMessageStreaming } from '../api/chat';
+import { useLayoutStore } from '../store/useLayoutStore';
+import { useUserStore } from '../store/useUserStore';
+import { useSessionStore } from '../store/useSessionStore';
+import { deleteSession } from '../api/session';
+import Navbar from '../components/layout/Navbar';
 
 const ChatPage = () => {
   const navigate = useNavigate();
@@ -24,6 +29,38 @@ const ChatPage = () => {
   const [isInitialScrollDone, setIsInitialScrollDone] = useState(false);
   const [latestMessageId, setLatestMessageId] = useState<number | null>(null);
   const [isFirstLoad, setIsFirstLoad] = useState(true);
+  const { isSidebarOpen, headerType, toggleSidebar, setHeaderType } = useLayoutStore();
+  const { sessions, fetchNextSessions } = useSessionStore();
+  const inputRef = React.useRef<HTMLInputElement>(null);
+  const { memberName } = useUserStore();
+
+  useEffect(() => {
+    if (isSidebarOpen) {
+      setHeaderType('simple');
+    } else {
+      setHeaderType('default'); // 또는 기본 타입
+    }
+  }, [isSidebarOpen, setHeaderType]);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+    fetchNextSessions();
+  }, []);
+
+  const handleDeleteSession = async (sessionId: string) => {
+    try {
+      await deleteSession(sessionId); // ✅ 실제 API 호출
+      useSessionStore.setState((prev) => ({
+        sessions: prev.sessions.filter((s) => s.sessionId !== sessionId),
+      }));
+    } catch (error) {
+      console.error('세션 삭제 실패:', error);
+    }
+  };
+
+  const handleNewChat = () => {
+    navigate('/main/');
+  };
 
   // 스크롤 보정을 위한 ref
   const scrollAnchorRef = useRef<HTMLDivElement | null>(null);
@@ -170,8 +207,18 @@ const ChatPage = () => {
 
   return (
     <ChatPageContainer>
-      <Header username="손성민" />
-      <ChatContainer>
+      <TopSection>
+        {isSidebarOpen && (
+          <Navbar
+            sessions={sessions}
+            onDeleteSession={handleDeleteSession}
+            onNewChat={handleNewChat}
+            onToggleSidebar={toggleSidebar}
+          />
+        )}
+        <Header username={memberName} type={headerType} onSidebarToggle={toggleSidebar} isSidebarOpen={isSidebarOpen} />
+      </TopSection>
+      <ChatContainer $isSidebarOpen={isSidebarOpen}>
         <ChatContent ref={scrollRef}>
           {/* Observer를 첫 번째 메시지 위에 위치 */}
           {hasNext && messages.length > 0 && <ObserverElement ref={observerRef} />}
@@ -215,8 +262,11 @@ const ChatPage = () => {
         isFetchMessages={isFetchMessages}
         scrollToBottom={scrollToBottom}
         setLatestMessageId={setLatestMessageId}
+        isSidebarOpen={isSidebarOpen}
       />
-      <AlertComment>Navi는 실수를 할 수 있습니다. 중요한 정보는 재차 확인하세요.</AlertComment>
+      <AlertComment $isSidebarOpen={isSidebarOpen}>
+        Navi는 실수를 할 수 있습니다. 중요한 정보는 재차 확인하세요.
+      </AlertComment>
     </ChatPageContainer>
   );
 };
@@ -233,19 +283,29 @@ const ChatPageContainer = styled.div`
   width: fit-content;
 `;
 
-const ChatContainer = styled.div`
+const TopSection = styled.div`
+  display: flex;
+  width: 100%;
+  height: 80px; /* 헤더 높이 */
+`;
+
+const ChatContainer = styled.div<{ $isSidebarOpen: boolean }>`
   display: flex;
   flex-direction: column;
   width: 100%;
   align-items: center;
   justify-content: center;
   height: calc(100vh - 9rem);
+  margin-left: ${(props) => (props.$isSidebarOpen ? '250px' : '0')}; /* 사이드바 너비만큼 마진 */
+  transition: margin-left 0.5s ease;
   overflow: hidden;
 `;
 
-const AlertComment = styled.p`
+const AlertComment = styled.p<{ $isSidebarOpen: boolean }>`
   font-size: 0.8rem;
   margin: 1rem 0 1.5rem;
+  margin-left: ${(props) => (props.$isSidebarOpen ? '250px' : '0')}; /* 사이드바 너비만큼 마진 */
+  transition: margin-left 0.5s ease;
   box-sizing: border-box;
 `;
 

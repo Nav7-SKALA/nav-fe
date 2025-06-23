@@ -12,6 +12,7 @@ interface ChatInputProps {
   onCreateNewSession?: (question: string) => Promise<{ sessionId: string }>;
   scrollToBottom?: () => void;
   setLatestMessageId?: React.Dispatch<React.SetStateAction<number | null>>;
+  isSidebarOpen?: boolean;
 }
 
 const ChatInput = ({
@@ -20,6 +21,7 @@ const ChatInput = ({
   onCreateNewSession,
   scrollToBottom,
   setLatestMessageId,
+  isSidebarOpen,
 }: ChatInputProps) => {
   const location = useLocation();
   const { sessionId } = useParams<{ sessionId: string }>();
@@ -93,6 +95,7 @@ const ChatInput = ({
   return (
     <InputSection
       $currentPage={currentPage}
+      $isSidebarOpen={isSidebarOpen}
       onClick={() => {
         const input = document.querySelector('input');
         if (input) input.focus();
@@ -132,7 +135,7 @@ const H2 = styled.h2`
   display: none;
 `;
 
-const InputSection = styled.section<{ $currentPage: string }>`
+const InputSection = styled.section<{ $currentPage: string; $isSidebarOpen?: boolean }>`
   background-color: #fff;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
   border-radius: 25px;
@@ -140,7 +143,11 @@ const InputSection = styled.section<{ $currentPage: string }>`
   max-width: ${(props) => (props.$currentPage.startsWith('/chat') ? 'calc(65rem - 2.5rem)' : '38rem')};
   padding: 1.5rem 1.5rem 1rem;
   box-sizing: border-box;
-  margin: 0 20px;
+  margin-left: ${(props) => (props.$isSidebarOpen ? '250px' : '0')}; /* 사이드바 너비만큼 마진 */
+  transition: margin-left 0.5s ease;
+  margin-right: 20px;
+  margin-top: 0;
+  margin-bottom: 0;
 `;
 
 const Input = styled.input`
