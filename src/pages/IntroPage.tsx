@@ -1,16 +1,23 @@
-import React, { useEffect } from 'react';
-import RoleModelCard from '../components/chat/RoleModelCard';
-import { RoleModel } from '../types/roleModel';
-
-interface BackendResponse {
-  response: RoleModel[];
+import React from 'react';
+import RoleModelProfileCard from '../components/chat/RoleModelProfileCard';
+import { MaleImg } from '../assets/common';
+interface RoleModelProfileCardProps {
+  name: string;
+  careerTitle: string;
+  skillSet: string;
+  tenure: number;
+  profileImage: string;
 }
 
 const IntroPage = () => {
   return (
-    <div>
-      <h1>인트로</h1>
-    </div>
+    <RoleModelProfileCard
+      name="김현준"
+      careerTitle="미친 PM Leader"
+      skillSet="주늑들게하기"
+      tenure={10}
+      profileImage={MaleImg}
+    />
   );
 };
 

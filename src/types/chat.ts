@@ -8,4 +8,13 @@ export interface Message {
   answer: string;
   isStreaming?: boolean;
   roleModels?: RoleModel[];
+
+  type?: 'normal' | 'intro' | 'modelMessage';
+  roleModelInfo?: {
+    name: string;
+    careerTitle: string;
+    skillSet: string;
+    tenure: number;
+    profileImage: string;
+  };
 }

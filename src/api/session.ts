@@ -106,3 +106,13 @@ export const fetchSessionMessages = async (
     nextMessageId: data.nextMessageId ?? null,
   };
 };
+
+export const createSession = async (): Promise<string> => {
+  const response = await api.post('/sessions/rolemodels', {}, { withCredentials: true });
+  const sessionId = response.data?.result?.sessionId;
+
+  if (!sessionId) {
+    throw new Error('세션 ID를 생성하지 못했습니다');
+  }
+  return sessionId;
+};
