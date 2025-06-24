@@ -145,7 +145,6 @@ const InputSection = styled.section<{ $currentPage: string; $isSidebarOpen?: boo
   box-sizing: border-box;
   margin-left: ${(props) => (props.$isSidebarOpen ? '250px' : '0')}; /* 사이드바 너비만큼 마진 */
   transition: margin-left 0.5s ease;
-  margin-right: 20px;
   margin-top: 0;
   margin-bottom: 0;
 `;
