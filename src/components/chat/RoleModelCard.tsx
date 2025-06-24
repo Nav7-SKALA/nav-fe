@@ -1,17 +1,37 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { FiBookmark } from 'react-icons/fi';
 import { SkLogo } from '../../assets/common';
 import { RoleModel } from '../../types/roleModel';
+import { createSession } from '../../api/session';
+import { MaleImg } from '../../assets/common';
 
 interface RoleModelCardProps {
   roleModels: RoleModel[];
 }
 
 const RoleModelCard = ({ roleModels = [] }: RoleModelCardProps) => {
+  const navigate = useNavigate();
   if (!Array.isArray(roleModels) || roleModels.length === 0) return null;
-  const handleMoreClick = (roleModel: RoleModel) => {
-    console.log('더보기 클릭:', roleModel);
+  const handleMoreClick = async (roleModel: RoleModel) => {
+    try {
+      const sessionId = await createSession();
+      navigate(`/chat/${sessionId}`, {
+        state: {
+          isRoleModel: true,
+          roleModelInfo: {
+            name: roleModel.name,
+            careerTitle: roleModel.careerTitle,
+            skillSet: 'Infra PM, AI/Data Dev.',
+            tenure: roleModel.years,
+            profileImage: MaleImg,
+          },
+        },
+      });
+    } catch (error) {
+      console.error('세션 생성 실패:', error);
+    }
   };
 
   const handleBookmarkClick = (roleModel: RoleModel) => {

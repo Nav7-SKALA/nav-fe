@@ -7,7 +7,6 @@ import LoginPage from '../pages/LoginPage';
 import MyPage from '../pages/MyPage';
 import RegisterPage from '../pages/RegisterPage';
 import ChatPage from '../pages/ChatPage';
-import RoleModelChatPage from '../pages/RoleModelChatPage';
 import RoleModelPage from '../pages/RoleModelPage';
 import ProfilePage from '../pages/ProfilePage';
 
@@ -25,7 +24,6 @@ function AppRouter() {
         <Route path="/intro" element={<IntroPage />} />
         <Route path="/chat/:sessionId" element={<ChatPage />} />
         <Route path="/rolemodel/*" element={<RoleModelPage />} />
-        <Route path="/rolemodelchat/*" element={<RoleModelChatPage />} />
         <Route path="/profile" element={<ProfilePage />} />
       </Routes>
     </BrowserRouter>
