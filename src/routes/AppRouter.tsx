@@ -9,6 +9,7 @@ import RegisterPage from '../pages/RegisterPage';
 import ChatPage from '../pages/ChatPage';
 import RoleModelPage from '../pages/RoleModelPage';
 import ProfilePage from '../pages/ProfilePage';
+import CareerIntroPage from '../pages/CareerIntroPage';
 
 function AppRouter() {
   return (
@@ -25,6 +26,7 @@ function AppRouter() {
         <Route path="/chat/:sessionId" element={<ChatPage />} />
         <Route path="/rolemodel/*" element={<RoleModelPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/careerintro" element={<CareerIntroPage />} />
       </Routes>
     </BrowserRouter>
   );

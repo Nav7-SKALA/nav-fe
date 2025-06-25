@@ -12,3 +12,8 @@ export const initializeExperience = async (experiences: ExperienceDto[]) => {
     throw error;
   }
 };
+
+export const fetchExperienceAll = async () => {
+  const response = await api.get('/profiles/me/experiences/all');
+  return response.data.result;
+};

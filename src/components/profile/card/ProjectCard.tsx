@@ -5,7 +5,7 @@ import { Project } from '../../../types/project';
 
 interface ProjectCardProps {
   project: Project;
-  onDelete: () => void;
+  onDelete?: () => void;
 }
 
 const ProjectCard = ({ project, onDelete }: ProjectCardProps) => {
@@ -15,11 +15,13 @@ const ProjectCard = ({ project, onDelete }: ProjectCardProps) => {
         <ProjectTitle>
           {project.title} <ProjectPeriod>{project.period}</ProjectPeriod>
         </ProjectTitle>
-        <ActionButtons>
-          <IconButton onClick={onDelete} $isDelete>
-            <FiTrash2 size={18} />
-          </IconButton>
-        </ActionButtons>
+        {onDelete && (
+          <ActionButtons>
+            <IconButton onClick={onDelete} $isDelete>
+              <FiTrash2 size={18} />
+            </IconButton>
+          </ActionButtons>
+        )}
       </CardHeader>
 
       <ProjectDetails>
@@ -30,7 +32,7 @@ const ProjectCard = ({ project, onDelete }: ProjectCardProps) => {
           프로젝트 규모: <DetailValue>{project.projectSize}</DetailValue>
         </DetailItem>
         <DetailItem>
-          역할: <DetailValue>{project.role}</DetailValue>
+          역할: <DetailValue>{project.role.join(', ')}</DetailValue>
         </DetailItem>
       </ProjectDetails>
 

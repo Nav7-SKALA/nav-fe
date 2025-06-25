@@ -17,3 +17,8 @@ export const initializeCertifications = async (certifications: CertificationDto[
     throw error;
   }
 };
+
+export const fetchCertificationAll = async () => {
+  const response = await api.get('/profiles/me/certifications/all');
+  return response.data.result;
+};

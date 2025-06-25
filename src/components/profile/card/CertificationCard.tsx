@@ -5,7 +5,7 @@ import { Certification } from '../../../types/certification';
 
 interface CertificationCardProps {
   certification: Certification;
-  onDelete: () => void;
+  onDelete?: () => void;
 }
 
 const CertificationCard = ({ certification, onDelete }: CertificationCardProps) => {
@@ -15,11 +15,13 @@ const CertificationCard = ({ certification, onDelete }: CertificationCardProps) 
         <CertificationName>
           {certification.name} <CertificationDate>{certification.acquisitedAt}</CertificationDate>
         </CertificationName>
-        <ActionButtons>
-          <IconButton onClick={onDelete} $isDelete>
-            <FiTrash2 size={18} />
-          </IconButton>
-        </ActionButtons>
+        {onDelete && (
+          <ActionButtons>
+            <IconButton onClick={onDelete} $isDelete>
+              <FiTrash2 size={18} />
+            </IconButton>
+          </ActionButtons>
+        )}
       </CardHeader>
     </CardWrapper>
   );

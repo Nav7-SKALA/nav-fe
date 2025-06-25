@@ -27,3 +27,8 @@ export const initializeProjects = async (projects: ProjectFormDto[]) => {
     throw error;
   }
 };
+
+export const fetchProjectAll = async () => {
+  const response = await api.get('/profiles/me/projects/all');
+  return response.data.result;
+};
