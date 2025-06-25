@@ -5,7 +5,7 @@ import { Experience } from '../../../types/experience';
 
 interface ExperienceCardProps {
   experience: Experience;
-  onDelete: (id: number) => void;
+  onDelete?: (id: number) => void;
 }
 
 const ExperienceCard = ({ experience, onDelete }: ExperienceCardProps) => {
@@ -15,11 +15,13 @@ const ExperienceCard = ({ experience, onDelete }: ExperienceCardProps) => {
         <ExperienceName>
           {`[${experience.experienceName}]`} <ExperienceDate>{experience.experiencedAt}</ExperienceDate>
         </ExperienceName>
-        <ActionButtons>
-          <IconButton onClick={() => onDelete(experience.id)} $isDelete>
-            <FiTrash2 size={18} />
-          </IconButton>
-        </ActionButtons>
+        {onDelete && (
+          <ActionButtons>
+            <IconButton onClick={() => onDelete(experience.id)} $isDelete>
+              <FiTrash2 size={18} />
+            </IconButton>
+          </ActionButtons>
+        )}
       </CardHeader>
 
       <ExperienceDetails>

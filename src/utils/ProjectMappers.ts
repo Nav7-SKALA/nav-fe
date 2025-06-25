@@ -1,4 +1,6 @@
 import { OptionType } from '../components/common/CustomSelect';
+import { CertificationResponse, Certification } from '../types/certification';
+import { Project, ProjectResponse } from '../types/project';
 
 // 공통 매퍼 함수 (id -> label)
 export const getLabelById = (id: string | number, options: OptionType[]): string => {
@@ -40,3 +42,19 @@ export const getProjectSize = (projectSize: string | number) => {
       return '없음';
   }
 };
+
+export const mapProjectResponseToProject = (data: ProjectResponse): Project => ({
+  id: data.projectId,
+  title: `[${data.projectName}]`,
+  period: `${data.startYear}년차 ~ ${data.endYear}년차`,
+  domain: data.domainName,
+  projectSize: data.projectSize,
+  role: data.roles,
+  skills: data.skillSets,
+});
+
+export const mapCertificationResponseToCertification = (data: CertificationResponse): Certification => ({
+  id: data.certificationId,
+  name: `[${data.certificationName}]`,
+  acquisitedAt: data.acquisitionDate,
+});

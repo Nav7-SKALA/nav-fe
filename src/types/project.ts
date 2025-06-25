@@ -19,3 +19,16 @@ export interface ProjectFormDto {
   skillSetIds: (string | number)[];
   isTurningPoint: boolean;
 }
+
+export interface ProjectResponse {
+  projectId: number;
+  projectName: string;
+  projectDescribe: string;
+  startYear: number;
+  endYear: number;
+  projectSize: string;
+  isTurningPoint: boolean;
+  domainName: string;
+  skillSets: string[];
+  roles: string[];
+}
