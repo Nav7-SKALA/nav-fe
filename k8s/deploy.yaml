@@ -18,7 +18,7 @@ spec:
       serviceAccountName: default
       containers:
         - name: nav7-fe
-          image: amdp-registry.skala-ai.com/skala25a/sk-nav7-fe:1.0.0-9-d9946f2f0cf3
+          image: amdp-registry.skala-ai.com/skala25a/sk-nav7-fe:1.0.0-11-83db9d548249
           env:
           - name: REACT_APP_API_URL
             valueFrom:
