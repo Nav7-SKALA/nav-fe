@@ -168,7 +168,7 @@ const ChatItemContainer = styled.div<{ $role: 'USER' | 'AGENT' }>`
   margin: 0.5rem 0;
 `;
 
-const ChatItemContent = styled.p`
+const ChatItemContent = styled.div`
   font-size: 0.9rem;
   margin: 0;
   word-break: break-word;

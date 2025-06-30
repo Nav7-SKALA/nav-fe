@@ -14,6 +14,7 @@ import { deleteSession } from '../api/session';
 
 const MainPage = () => {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [inputValue, setInputValue] = useState('');
   const inputRef = React.useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
@@ -25,7 +26,7 @@ const MainPage = () => {
   useEffect(() => {
     inputRef.current?.focus();
     fetchNextSessions();
-  }, []);
+  }, [fetchNextSessions]);
 
   // 사이드바 토글 시 헤더 타입도 변경
   useEffect(() => {
@@ -80,7 +81,13 @@ const MainPage = () => {
           <SubGretting>안녕하세요, {memberName} 님</SubGretting>
           <MainGretting>무엇을 도와드릴까요?</MainGretting>
         </GrettingSection>
-        <ChatInput setMessages={setMessages} isFetchMessages={false} onCreateNewSession={handleCreateNewSession} />
+        <ChatInput
+          setMessages={setMessages}
+          isFetchMessages={false}
+          onCreateNewSession={handleCreateNewSession}
+          inputValue={inputValue}
+          setInputValue={setInputValue}
+        />
         <ExampleSection>
           <H2>예시 기능</H2>
           {exampleList.map((example, index) => (
@@ -92,6 +99,7 @@ const MainPage = () => {
               description={example.description}
               examplePrompt={example.examplePrompt}
               exampleOutput={example.exampleOutput}
+              onClickExample={() => setInputValue(example.examplePrompt)}
             />
           ))}
         </ExampleSection>
@@ -109,13 +117,15 @@ interface ExampleProps {
   description: string;
   examplePrompt: string;
   exampleOutput: string;
+  onClickExample: () => void;
 }
 
-const Example = ({ img, title, content, description, examplePrompt, exampleOutput }: ExampleProps) => {
+const Example = ({ img, title, content, description, examplePrompt, exampleOutput, onClickExample }: ExampleProps) => {
   const [showModal, setShowModal] = useState(false);
 
   return (
     <ExampleContainer
+      onClick={onClickExample}
       onMouseEnter={() => {
         setShowModal(true);
       }}

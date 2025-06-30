@@ -13,6 +13,8 @@ interface ChatInputProps {
   scrollToBottom?: () => void;
   setLatestMessageId?: React.Dispatch<React.SetStateAction<number | null>>;
   isSidebarOpen?: boolean;
+  inputValue?: string;
+  setInputValue?: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const ChatInput = ({
@@ -22,32 +24,37 @@ const ChatInput = ({
   scrollToBottom,
   setLatestMessageId,
   isSidebarOpen,
+  inputValue,
+  setInputValue,
 }: ChatInputProps) => {
   const location = useLocation();
   const { sessionId } = useParams<{ sessionId: string }>();
 
   const [isComposing, setIsComposing] = useState(false);
   const [currentPage, setCurrentPage] = useState<string>(window.location.pathname);
-  const [inputValue, setInputValue] = useState('');
+  const [localInputValue, setLocalInputValue] = useState('');
+
+  const internalInputValue = inputValue !== undefined ? inputValue : localInputValue;
+  const internalSetInputValue = setInputValue !== undefined ? setInputValue : setLocalInputValue;
 
   useEffect(() => {
     setCurrentPage(location.pathname);
   }, [location.pathname]);
 
   useEffect(() => {
-    setInputValue('');
-  }, [currentPage]);
+    internalSetInputValue('');
+  }, [currentPage, internalSetInputValue]);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setInputValue(e.target.value);
+    internalSetInputValue(e.target.value);
   };
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (inputValue.trim() === '') return;
+    if (internalInputValue.trim() === '') return;
 
-    const userQuestion = inputValue;
-    setInputValue('');
+    const userQuestion = internalInputValue;
+    internalSetInputValue('');
 
     let targetSessionId = sessionId;
     if (!targetSessionId && onCreateNewSession) {
@@ -106,7 +113,7 @@ const ChatInput = ({
         type="text"
         placeholder="무엇이든 물어보세요"
         onChange={handleInputChange}
-        value={inputValue}
+        value={internalInputValue}
         onKeyDown={(e) => {
           if (isComposing) return;
           if (e.key === 'Enter') {
