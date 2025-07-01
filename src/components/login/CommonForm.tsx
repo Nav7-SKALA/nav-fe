@@ -247,7 +247,11 @@ const CommonForm = ({ pageType }: CommonFormProps) => {
       const response = await loginApi(userId, password);
       const { memberId, profileId, memberName, gender } = response.result;
       setUser(memberId, profileId, memberName, gender);
-      navigate('/careerintro');
+      if (memberName === '관리자') {
+        navigate('/admin');
+      } else {
+        navigate('/careerintro');
+      }
     } catch (error: any) {
       alert('로그인 실패: ' + (error.response?.message || error.message));
     }
