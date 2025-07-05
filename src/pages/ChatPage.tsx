@@ -13,21 +13,22 @@ import { useUserStore } from '../store/useUserStore';
 import { useSessionStore } from '../store/useSessionStore';
 import { deleteSession } from '../api/session';
 import Navbar from '../components/layout/Navbar';
+import { RoleModelGroup } from '../types/roleModel';
+
+type LocationState = {
+  roleModelGroup?: RoleModelGroup;
+  roleModelId?: string;
+  question?: string;
+};
 
 const ChatPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const state = location.state as {
-    message?: string;
-    isRoleModel?: boolean;
-    roleModelInfo?: {
-      name: string;
-      careerTitle: string;
-      skillSet: string;
-      tenure: number;
-      profileImage: string;
-    };
-  };
+  const state = location.state as LocationState | null;
+  const roleModelGroup = state?.roleModelGroup;
+  const roleModelId = state?.roleModelId;
+  const question = state?.question;
+  const isRoleModelSession = !!roleModelId;
   const { sessionId } = useParams<{ sessionId: string }>();
   const [messages, setMessages] = useState<Message[]>([]);
   const [isFetchMessages, setIsFetchMessages] = useState(false);
@@ -92,7 +93,35 @@ const ChatPage = () => {
 
     try {
       const res = await fetchSessionMessages(sessionId, nextMessageId ?? undefined);
-      setMessages((prev) => [...res.messages.reverse(), ...prev]);
+
+      const reversedMessages = res.messages.reverse();
+      const newMessages: Message[] = [...reversedMessages];
+
+      // ✅ 마지막 메시지까지 불러왔고, roleModelDTO가 있을 때 greeting 메시지 생성
+      if (!res.hasNext && res.roleModelDTO) {
+        const now = new Date().toISOString();
+        const messageId = Date.now();
+
+        const greeting = splitIntoSentences(res.roleModelDTO.greetingMessage);
+
+        const roleModelGreetingMessage: Message = {
+          sessionId: sessionId,
+          memberMessageId: messageId,
+          createdAt: now,
+          lastActiveAt: now,
+          question: '',
+          isStreaming: false,
+          blocks: [
+            { type: 'role_model_card', content: res.roleModelDTO },
+            { type: 'text', content: greeting },
+          ],
+        };
+
+        newMessages.unshift(roleModelGreetingMessage);
+      }
+
+      // ✅ 한 번에 메시지 반영
+      setMessages((prev) => [...newMessages, ...prev]);
       setHasNext(res.hasNext);
       setNextMessageId(res.nextMessageId);
 
@@ -116,84 +145,81 @@ const ChatPage = () => {
     }
   }, [sessionId, nextMessageId, isFirstLoad, hasNext]);
 
-  const sendInitialMessage = useCallback(
-    async (question: string, isRoleModel: boolean = false) => {
-      if (!sessionId || isInitialMessageSent) return;
+  const splitIntoSentences = (text: string) => {
+    if (!text) return '';
+    return (
+      text
+        // 문장 끝에 있는 마침표/물음표/느낌표 뒤에 줄바꿈 추가
+        .replace(/([.!?])(?=\s|$)/g, '$1\n\n')
+    );
+  };
 
-      const now = new Date().toISOString();
-      const messageId = Date.now();
+  const sendInitialMessage = useCallback(() => {
+    if (!sessionId || isInitialMessageSent) return;
 
-      if (isRoleModel) {
-        // 롤모델 인삿말 메시지 (question 없음, answer만 왼쪽 말풍선)
-        const introMessage: Message = {
-          sessionId,
-          memberMessageId: Date.now() - 1,
-          createdAt: now,
-          lastActiveAt: now,
-          type: 'intro',
-          question: '',
-          answer: '',
-        };
+    const now = new Date().toISOString();
+    const messageId = Date.now();
 
-        const greetingMessage: Message = {
-          sessionId,
-          memberMessageId: Date.now(),
-          createdAt: now,
-          lastActiveAt: now,
-          question: '',
-          answer: question,
-          type: 'modelMessage',
-          isStreaming: true, // ✅ 이걸 추가
-        };
-
-        setMessages((prev) => [...prev, introMessage, greetingMessage]);
-        setIsInitialMessageSent(true);
-        setLatestMessageId(greetingMessage.memberMessageId);
-        setTimeout(() => scrollToBottom(), 0);
-        return;
-      }
-
-      // 일반 질의 메시지
-      const message: Message = {
+    // 일반 채팅 세션인 경우
+    if (question) {
+      const userMessage: Message = {
         sessionId,
         memberMessageId: messageId,
         createdAt: now,
         lastActiveAt: now,
         question,
-        answer: '',
         isStreaming: true,
+        blocks: [],
       };
 
-      setMessages((prev) => [...prev, message]);
+      setMessages((prev) => [...prev, userMessage]);
       setIsInitialMessageSent(true);
       setLatestMessageId(messageId);
       setTimeout(() => scrollToBottom(), 0);
 
-      try {
-        const fullAnswer = await sendChatMessageStreaming(sessionId, question, messageId);
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.memberMessageId === fullAnswer.memberMessageId
-              ? {
-                  ...msg,
-                  answer: fullAnswer.answer,
-                  isStreaming: true,
-                  roleModels: fullAnswer.roleModels,
-                }
-              : msg
-          )
-        );
-      } catch (error) {
-        console.error('Error sending initial message:', error);
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.memberMessageId === messageId ? { ...msg, answer: '오류가 발생했습니다.', isStreaming: false } : msg
-          )
-        );
-      }
-    },
-    [sessionId, isInitialMessageSent]
-  );
+      // 답변 요청
+      sendChatMessageStreaming(sessionId, question, messageId)
+        .then((fullAnswer) => {
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.memberMessageId === fullAnswer.memberMessageId
+                ? {
+                    ...msg,
+                    blocks: fullAnswer.blocks,
+                    isStreaming: true,
+                  }
+                : msg
+            )
+          );
+        })
+        .catch((error) => {
+          console.error('초기 메시지 전송 실패:', error);
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.memberMessageId === messageId
+                ? {
+                    ...msg,
+                    blocks: [{ type: 'text', content: '초기 메시지를 불러오는 데 실패했습니다.' }],
+                    isStreaming: false,
+                  }
+                : msg
+            )
+          );
+        });
+
+      // 메시지 사용 후 state 초기화
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [
+    sessionId,
+    isInitialMessageSent,
+    isRoleModelSession,
+    roleModelGroup,
+    question,
+    scrollToBottom,
+    navigate,
+    location.pathname,
+  ]);
 
   useInfiniteScrolling({
     observerRef: observerRef.current,
@@ -202,11 +228,14 @@ const ChatPage = () => {
   });
 
   useEffect(() => {
-    if (isFetchMessages && !isInitialScrollDone && isFirstLoad === false) {
-      scrollToBottom();
-      setIsInitialScrollDone(true);
+    if (isFetchMessages && isFirstLoad === false) {
+      const scrollTimer = setTimeout(() => {
+        scrollToBottom();
+        setIsInitialScrollDone(true);
+      }, 30); // 조금 더 여유를 둠
+      return () => clearTimeout(scrollTimer);
     }
-  }, [isFetchMessages, isInitialScrollDone, isFirstLoad]);
+  }, [isFetchMessages, messages, isFirstLoad]);
 
   useEffect(() => {
     setMessages([]);
@@ -227,25 +256,10 @@ const ChatPage = () => {
   }, [sessionId, isFetchMessages, loadMessages, isFirstLoad]);
 
   useEffect(() => {
-    if (sessionId && isFetchMessages && !isInitialMessageSent) {
-      if (state?.isRoleModel && state.roleModelInfo) {
-        const greeting = `안녕하세요, ${memberName}님 ${state.roleModelInfo.name}입니다. 저에게 궁금한점이 있으신가요?`;
-        sendInitialMessage(greeting, true);
-      } else if (state?.message) {
-        sendInitialMessage(state.message);
-        navigate(location.pathname, { replace: true, state: {} });
-      }
+    if (sessionId && isFetchMessages && !isInitialMessageSent && (question || isRoleModelSession)) {
+      sendInitialMessage();
     }
-  }, [
-    state,
-    sessionId,
-    isFetchMessages,
-    isInitialMessageSent,
-    sendInitialMessage,
-    navigate,
-    location.pathname,
-    memberName,
-  ]);
+  }, [sessionId, isFetchMessages, isInitialMessageSent, question, isRoleModelSession, sendInitialMessage]);
 
   return (
     <ChatPageContainer>
@@ -290,7 +304,6 @@ const ChatPage = () => {
                   onContentUpdate={scrollToBottom}
                   isNewMessage={isLatestMessage}
                   isLoadingPreviousChats={!isInitialScrollDone}
-                  roleModelInfo={state?.roleModelInfo}
                 />
               </React.Fragment>
             );
@@ -303,6 +316,7 @@ const ChatPage = () => {
         scrollToBottom={scrollToBottom}
         setLatestMessageId={setLatestMessageId}
         isSidebarOpen={isSidebarOpen}
+        roleModelId={roleModelId}
       />
       <AlertComment $isSidebarOpen={isSidebarOpen}>
         Navi는 실수를 할 수 있습니다. 중요한 정보는 재차 확인하세요.
@@ -321,6 +335,7 @@ const ChatPageContainer = styled.div`
   height: 100vh;
   min-width: 100vw;
   width: fit-content;
+  overflow-x: hidden;
 `;
 
 const TopSection = styled.div`
@@ -354,6 +369,7 @@ const ChatDate = styled.p`
   font-weight: 700;
   margin: 0;
   justify-self: center;
+  margin-bottom: 0.3rem;
 `;
 
 const ChatContent = styled.div`

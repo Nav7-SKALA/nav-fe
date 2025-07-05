@@ -1,37 +1,21 @@
 import React from 'react';
 import styled from 'styled-components';
+import { MaleImg } from '../../assets/common';
 
 interface RoleModelProfileCardProps {
   name?: string;
   careerTitle?: string;
-  skillSet?: string;
-  tenure?: number;
-  profileImage?: string;
+  skillSet?: string[];
+  tenure?: string;
 }
 
-const RoleModelProfileCard = ({
-  name = '김현준',
-  careerTitle = 'Senior PM Engineer',
-  skillSet = 'Infra PM',
-  tenure = 20,
-  profileImage = '',
-}: RoleModelProfileCardProps) => {
+const RoleModelProfileCard = ({ name, careerTitle, skillSet, tenure }: RoleModelProfileCardProps) => {
   return (
     <CardWrapper>
-      {/* Header */}
-      <Header>
-        <BackButton>
-          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-        </BackButton>
-        <HeaderTitle>채팅</HeaderTitle>
-      </Header>
-
       {/* Profile Section */}
       <ProfileSection>
         <ProfileImageWrapper>
-          <ProfileImage src={profileImage} alt={`${name} 프로필`} />
+          <ProfileImage src={MaleImg} alt={`${name} 프로필`} />
         </ProfileImageWrapper>
         <Name>{name}</Name>
 
@@ -48,7 +32,7 @@ const RoleModelProfileCard = ({
 
           <InfoRow>
             <InfoLabel>Skill set</InfoLabel>
-            <InfoValue>{skillSet}</InfoValue>
+            <InfoValue>{skillSet.join(' ')}</InfoValue>
           </InfoRow>
 
           <InfoRow>
@@ -65,40 +49,10 @@ export default RoleModelProfileCard;
 
 const CardWrapper = styled.div`
   max-width: 320px;
-  margin: 0 auto;
   background-color: #ffffff;
   border-radius: 24px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-`;
-
-const Header = styled.div`
-  display: flex;
-  align-items: center;
-  padding: 16px;
-  border-bottom: 1px solid #f3f4f6;
-`;
-
-const BackButton = styled.button`
-  padding: 0.3rem;
-  background: none;
-  border: none;
-  border-radius: 5px;
-  color: #6b7280;
-  cursor: pointer;
-  transition: background-color 0.2s;
-
-  &:hover {
-    background-color: #f3f4f6;
-  }
-`;
-
-const HeaderTitle = styled.h1`
-  margin-left: 1rem;
-  font-size: 1rem;
-  font-weight: 500;
-  color: #606060;
-  margin: 0;
 `;
 
 const ProfileSection = styled.div`
@@ -159,6 +113,8 @@ const InfoLabel = styled.span`
   color: #606060;
   font-weight: 500;
   font-size: 0.9rem;
+  min-width: 6rem;
+  flex-shrink: 0;
 `;
 
 const InfoValue = styled.span`
@@ -166,4 +122,7 @@ const InfoValue = styled.span`
   font-weight: 500;
   font-size: 0.9rem;
   text-align: right;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  flex: 1;
 `;

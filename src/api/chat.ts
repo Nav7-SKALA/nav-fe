@@ -1,6 +1,6 @@
 import api from './index';
-import { RoleModel } from '../types/roleModel';
-import { Message } from '../types/chat';
+import { Message, MessageBlock } from '../types/chat';
+import { RoleModelGroup } from '../types/roleModel';
 
 export interface SendChatMessageResponse {
   sessionId: string;
@@ -42,47 +42,124 @@ export const sendChatMessageStreaming = async (
       }
     );
     const data = response.data;
-    const rawResponse = data?.result?.map?.response;
+    const map = data?.result?.map;
 
-    if (!data?.isSuccess && !rawResponse) {
+    if (!data?.isSuccess && !map) {
       throw new Error('응답 형식이 올바르지 않습니다.');
+    }
+
+    const type = data.result.type;
+
+    const blocks: MessageBlock[] = [];
+
+    switch (type) {
+      case 'path_recommend': {
+        const { similar_text, similar_roadmaps, text, roadmaps } = map;
+        if (similar_text) {
+          blocks.push({ type: 'similar_text', content: similar_text });
+        }
+
+        if (Array.isArray(similar_roadmaps) && similar_roadmaps.length > 0) {
+          blocks.push({ type: 'similar_roadmaps', content: similar_roadmaps });
+        }
+
+        if (text) {
+          blocks.push({ type: 'text', content: text });
+        }
+
+        if (Array.isArray(roadmaps) && roadmaps.length > 0) {
+          blocks.push({ type: 'roadmaps', content: roadmaps });
+        }
+        break;
+      }
+
+      case 'role_model': {
+        if (Array.isArray(map.rolemodels) && map.rolemodels.length > 0) {
+          const enrichedRoleModels = map.rolemodels.map((rm: RoleModelGroup) => {
+            const greetingMessage = `안녕하세요, ${rm.group_name}입니다. \n\n저는 ${rm.current_position}로서 약 ${rm.experience_years}의 경력을 가지고 있어요. \n\n${rm.advice_message} 저에게 궁금한점이 있으신가요?`;
+            return {
+              ...rm,
+              greetingMessage,
+            };
+          });
+
+          console.log(enrichedRoleModels);
+
+          blocks.push({ type: 'role_model', content: enrichedRoleModels });
+        }
+        break;
+      }
+
+      case 'career_goal': {
+        if (map.text) {
+          blocks.push({ type: 'text', content: map.text });
+        }
+        break;
+      }
+
+      case 'trend_path': {
+        if (map.text) {
+          blocks.push({ type: 'text', content: map.text });
+        }
+
+        if (map.ax_college) {
+          blocks.push({ type: 'ax_college', content: map.ax_college });
+        }
+        break;
+      }
+
+      case 'EXCEPTION': {
+        if (map.text) {
+          blocks.push({ type: 'text', content: map.text });
+        }
+        break;
+      }
     }
 
     const answerMessage = {
       memberMessageId: messageId ?? Date.now(),
-      sessionId: sessionId,
+      sessionId,
       createdAt: new Date().toISOString(),
       lastActiveAt: new Date().toISOString(),
-      question: question,
-      answer: '',
+      question,
       isStreaming: false,
-      roleModels: [],
+      blocks,
+      responseType: type,
     };
 
-    // 문자열 응답 처리
-    if (typeof rawResponse === 'string') {
-      return {
-        ...answerMessage,
-        answer: rawResponse,
-      };
-    }
-
-    // 배열 응답 처리
-    if (Array.isArray(rawResponse)) {
-      const roleModels: RoleModel[] = rawResponse.map((item: any) => ({
-        years: item.years && !isNaN(Number(item.years)) ? Number(item.years) : 0,
-        careerTitle: item.careerTitle ?? '엔지니어',
-        name: item.name ?? '이름 없음',
-      }));
-      return {
-        ...answerMessage,
-        answer: '추천 롤모델을 확인해보세요!',
-        roleModels: roleModels,
-      };
-    }
-    throw new Error('응답 형식이 올바르지 않습니다.');
+    return answerMessage;
   } catch (error) {
     console.error('메시지 전송 실패:', error);
+    throw error;
+  }
+};
+
+export const sendRoleModelChatStreaming = async (
+  sessionId: string,
+  question: string,
+  messageId?: number
+): Promise<Message> => {
+  try {
+    const response = await api.post(`/sessions/rolemodels/${sessionId}`, { question });
+    const blocks: MessageBlock[] = [];
+    const data = response.data;
+
+    if (data.result.answer) {
+      blocks.push({ type: 'text', content: response.data.result.answer });
+    }
+    const answerMessage = {
+      memberMessageId: messageId ?? Date.now(),
+      sessionId,
+      createdAt: new Date().toISOString(),
+      lastActiveAt: new Date().toISOString(),
+      question,
+      isStreaming: false,
+      blocks,
+    };
+
+    return answerMessage;
+  } catch (error) {
+    console.error('롤모델 대화 전송 실패:', error);
     throw error;
   }
 };

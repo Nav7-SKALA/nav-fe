@@ -6,6 +6,7 @@ import { FaPowerOff } from 'react-icons/fa';
 import { useUserStore } from '../store/useUserStore';
 import { Direction } from '../types/direction';
 import { fetchDirection, fetchDirectionsAll, createDirection } from '../api/direction';
+import { logout } from '../api/logout';
 
 // 스타일 컴포넌트
 const Container = styled.div`
@@ -339,11 +340,16 @@ const AdminPage = () => {
     setIsEditing(true);
   };
 
-  const handleLogoutBtn = () => {
+  const handleLogoutBtn = async () => {
     // zustand 초기화
     useUserStore.getState().logout();
     localStorage.removeItem('user-storage');
 
+    try {
+      await logout();
+    } catch (error) {
+      console.error('로그아웃 실패:', error);
+    }
     navigate('/login');
   };
 

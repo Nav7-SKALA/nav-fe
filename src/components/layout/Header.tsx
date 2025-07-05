@@ -4,7 +4,8 @@ import styled from 'styled-components';
 import { NaviLogo } from '../../assets/common';
 import { FaPowerOff } from 'react-icons/fa';
 import { FiSidebar, FiEdit } from 'react-icons/fi';
-import { AiOutlineUser } from 'react-icons/ai';
+import { useUserStore } from '../../store/useUserStore';
+import { logout } from '../../api/logout';
 
 type HeaderProps = {
   type?: 'default' | 'simple';
@@ -20,9 +21,18 @@ const Header = ({ type = 'default', username, onSidebarToggle, isSidebarOpen }: 
     navigate('/main/*');
   };
 
-  const handleLogoutBtn = () => {
-    alert('로그아웃 되었습니다.');
-    // navigate('/login');
+  const handleLogoutBtn = async () => {
+    // zustand 초기화
+    useUserStore.getState().logout();
+    localStorage.removeItem('user-storage');
+    localStorage.removeItem('layout-storage');
+
+    try {
+      await logout();
+    } catch (error) {
+      console.error('로그아웃 오류:', error);
+    }
+    navigate('/login');
   };
 
   return (
@@ -44,9 +54,6 @@ const Header = ({ type = 'default', username, onSidebarToggle, isSidebarOpen }: 
       </LeftSection>
       <RightSection>
         <UserName>{username} 님</UserName>
-        <IconBtn>
-          <AiOutlineUser size={30} />
-        </IconBtn>
         <ExitBtn onClick={handleLogoutBtn}>
           <FaPowerOff size={24} color="#FF8B8B" />
         </ExitBtn>

@@ -57,7 +57,7 @@ const MainPage = () => {
   const handleCreateNewSession = async (question: string): Promise<{ sessionId: string }> => {
     const { sessionId } = await createNewSession(question);
     navigate(`/chat/${sessionId}`, {
-      state: { message: question },
+      state: { question },
     });
     return { sessionId };
   };
@@ -182,21 +182,21 @@ const exampleList = [
       '1단계: Node.js/Express 기초 학습 (2개월)\n2단계: 데이터베이스 설계 및 활용 (1개월)\n3단계: API 설계 및 개발 (2개월)\n4단계: 클라우드 서비스 활용 (1개월)',
   },
   {
-    img: PencilImg,
+    img: RoleModelImg,
     title: '롤모델',
-    content: '금융 Domain 중심 Backend 개발자의 커리어를 보여줘',
+    content: '백엔드 개발 전문가한테 조언 받고 싶습니다',
     description:
       '다양한 분야의 전문가들의 커리어 path를 분석하여 실질적인 인사이트를 제공합니다. 실제 경험과 노하우를 바탕으로 한 조언을 받을 수 있습니다.',
-    examplePrompt: '금융 도메인에서 성공한 백엔드 개발자의 커리어 경로를 알고 싶어요.',
+    examplePrompt: '백엔드 개발 전문가한테 조언 받고 싶습니다.',
     exampleOutput:
       '대표적인 금융 백엔드 개발자 커리어:\n• 주니어(1-3년): 기본 API 개발, 금융 도메인 이해\n• 미들(3-7년): 대용량 거래 처리, 보안 시스템 구축\n• 시니어(7년+): 아키텍처 설계, 팀 리딩\n필수 스킬셋과 각 단계별 성장 포인트를 상세히 안내해드립니다.',
   },
   {
-    img: RoleModelImg,
-    title: '스킬 추천',
-    content: '지금 상태에서 어떤 기술을 익히는 것이 도움이 될까요?',
+    img: PencilImg,
+    title: '학습 추천',
+    content: '백엔드 개발 역량을 높이려면 어떻게 공부해야 하나요?',
     description: '현재 보유 기술과 시장 트렌드를 분석하여 가장 효과적인 다음 학습 방향을 제시합니다.',
-    examplePrompt: 'React와 Java Spring을 다룰 수 있는데, 다음에 어떤 기술을 배우면 좋을까요?',
+    examplePrompt: '백엔드 개발 역량을 더 빠르게 높이려면 어떻게 공부해야 할까요',
     exampleOutput:
       '추천 기술 스택 (우선순위순):\n1. Docker/Kubernetes - 컨테이너 기술 (높음)\n2. AWS/GCP 클라우드 서비스 (높음)\n3. TypeScript - 타입 안정성 향상 (중간)\n4. Redis - 캐싱 및 성능 최적화 (중간)\n각 기술의 학습 시간과 활용도, 연봉 상승 효과를 함께 제공합니다.',
   },
