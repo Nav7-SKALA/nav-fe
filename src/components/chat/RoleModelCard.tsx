@@ -3,39 +3,29 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { FiBookmark } from 'react-icons/fi';
 import { SkLogo } from '../../assets/common';
-import { RoleModel } from '../../types/roleModel';
-import { createSession } from '../../api/session';
-import { MaleImg } from '../../assets/common';
+import { RoleModelGroup } from '../../types/roleModel';
 
 interface RoleModelCardProps {
-  roleModels: RoleModel[];
+  roleModelGroups: RoleModelGroup[];
 }
 
-const RoleModelCard = ({ roleModels = [] }: RoleModelCardProps) => {
+const RoleModelCard = ({ roleModelGroups = [] }: RoleModelCardProps) => {
   const navigate = useNavigate();
-  if (!Array.isArray(roleModels) || roleModels.length === 0) return null;
-  const handleMoreClick = async (roleModel: RoleModel) => {
+  if (!Array.isArray(roleModelGroups) || roleModelGroups.length === 0) return null;
+  const handleMoreClick = async (roleModelGroup: RoleModelGroup) => {
     try {
-      const sessionId = await createSession();
-      navigate(`/chat/${sessionId}`, {
+      navigate(`/rolemodel/${roleModelGroup.group_id}`, {
         state: {
-          isRoleModel: true,
-          roleModelInfo: {
-            name: roleModel.name,
-            careerTitle: roleModel.careerTitle,
-            skillSet: 'Infra PM, AI/Data Dev.',
-            tenure: roleModel.years,
-            profileImage: MaleImg,
-          },
+          roleModelGroup,
         },
       });
     } catch (error) {
-      console.error('세션 생성 실패:', error);
+      console.error('라우팅 실패:', error);
     }
   };
 
-  const handleBookmarkClick = (roleModel: RoleModel) => {
-    console.log('북마크 클릭:', roleModel);
+  const handleBookmarkClick = (group: RoleModelGroup) => {
+    console.log('북마크 클릭:', group);
   };
 
   const backgroundColors = [
@@ -45,14 +35,14 @@ const RoleModelCard = ({ roleModels = [] }: RoleModelCardProps) => {
   ];
   return (
     <CardsContainer>
-      {roleModels.map((roleModel, index) => (
+      {roleModelGroups.map((group, index) => (
         <Card key={index}>
-          <BookmarkIcon onClick={() => handleBookmarkClick(roleModel)} />
-          <CardContent backgroundColor={backgroundColors[index % backgroundColors.length]}>
+          <BookmarkIcon onClick={() => handleBookmarkClick(group)} />
+          <CardContent $backgroundColor={backgroundColors[index % backgroundColors.length]}>
             <JobTitle>
-              <Experience>{roleModel.years}년차 </Experience>
+              <Experience>{group.experience_years}차 </Experience>
 
-              <CareerTitle>{roleModel.careerTitle}</CareerTitle>
+              <CareerTitle>{group.current_position}</CareerTitle>
             </JobTitle>
           </CardContent>
           <CardFooter>
@@ -61,13 +51,11 @@ const RoleModelCard = ({ roleModels = [] }: RoleModelCardProps) => {
                 <SkLogo title="SK Logo" />
               </CompanyLogo>
               <CompanyDetails>
-                <CompanyName>
-                  {roleModel.years}년차 {roleModel.careerTitle}
-                </CompanyName>
-                <Nickname>{roleModel.name}</Nickname>
+                <CompanyName>{group.current_position}</CompanyName>
+                <Nickname>{group.group_name}</Nickname>
               </CompanyDetails>
             </Footer>
-            <MoreButton onClick={() => handleMoreClick(roleModel)}>더보기</MoreButton>
+            <MoreButton onClick={() => handleMoreClick(group)}>더보기</MoreButton>
           </CardFooter>
         </Card>
       ))}
@@ -117,7 +105,7 @@ const BookmarkIcon = styled(FiBookmark)`
   }
 `;
 
-const CardContent = styled.div<{ backgroundColor?: string }>`
+const CardContent = styled.div<{ $backgroundColor?: string }>`
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -126,7 +114,7 @@ const CardContent = styled.div<{ backgroundColor?: string }>`
   margin-bottom: 5px;
   padding-left: 16px;
   padding-top: 40px;
-  background-color: ${({ backgroundColor }) => backgroundColor || 'transparent'};
+  background-color: ${({ $backgroundColor }) => $backgroundColor || 'transparent'};
 `;
 
 const JobTitle = styled.div`

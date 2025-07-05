@@ -1,7 +1,7 @@
 import api from './index';
 import { ChatSession } from '../types/session';
-import { Message } from '../types/chat';
-import { RoleModel } from '../types/roleModel';
+import { Message, MessageBlock } from '../types/chat';
+import { RoleModelGroup } from '../types/roleModel';
 
 export interface FetchSessionParams {
   cursorAt?: string;
@@ -47,6 +47,15 @@ export const deleteSession = async (sessionId: string): Promise<void> => {
   await api.post(`/sessions/delete/${sessionId}`);
 };
 
+export interface RoleModelDtoResponse {
+  roleModelId: string;
+  greetingMessage: string;
+  group_name: string;
+  current_position: string;
+  experience_years: string;
+  common_skill_set: string[];
+}
+
 export interface FetchSessionMessageResponse {
   sessionId: string;
   sessionTitle: string;
@@ -54,12 +63,13 @@ export interface FetchSessionMessageResponse {
   messages: Message[];
   hasNext: boolean;
   nextMessageId?: string; // 추가: 다음 메시지 ID
+  roleModelDTO?: RoleModelDtoResponse | null;
 }
 
 export const fetchSessionMessages = async (
   sessionId: string,
   cursor?: string,
-  size: number = 5
+  size: number = 10
 ): Promise<FetchSessionMessageResponse> => {
   const response = await api.get(`/sessions/${sessionId}`, {
     params: { cursor, size },
@@ -68,32 +78,71 @@ export const fetchSessionMessages = async (
 
   const data = response.data.result;
 
-  const cleanedMessages = (data.messages ?? []).map((msg: Message) => {
-    let cleanedAnswer = msg.answer;
-    let roleModels: RoleModel[] = [];
+  const cleanedMessages = (data.messages ?? []).map((msg: any) => {
+    const answer = msg.answer ?? {};
+    const blocks: MessageBlock[] = [];
 
-    try {
-      const parsed = JSON.parse(cleanedAnswer);
-      if (parsed?.response && Array.isArray(parsed.response)) {
-        // 롤모델로 추정되는 응답일 경우
-        roleModels = parsed.response.map((item: any) => ({
-          years: item.years && !isNaN(Number(item.years)) ? Number(item.years) : 0,
-          careerTitle: item.careerTitle ?? '엔지니어',
-          name: item.name ?? '이름 없음',
-        }));
-        cleanedAnswer = '추천 롤모델을 확인해보세요!';
-      } else if (parsed?.response && typeof parsed.response === 'string') {
-        // 일반 텍스트 응답일 경우
-        cleanedAnswer = parsed.response;
+    switch (msg.type) {
+      case 'path_recommend': {
+        // similar_text
+        if (answer.similar_text) {
+          blocks.push({ type: 'similar_text', content: answer.similar_text });
+        }
+
+        // similar_roadmaps
+        if (Array.isArray(answer.similar_roadmaps) && answer.similar_roadmaps.length > 0) {
+          blocks.push({ type: 'similar_roadmaps', content: answer.similar_roadmaps });
+        }
+
+        // text
+        if (answer.text) {
+          blocks.push({ type: 'text', content: answer.text });
+        }
+
+        // roadmaps
+        if (Array.isArray(answer.roadmaps) && answer.roadmaps.length > 0) {
+          blocks.push({ type: 'roadmaps', content: answer.roadmaps });
+        }
+        break;
       }
-    } catch (e) {
-      // JSON 파싱 실패하면 일반 텍스트 응답
+
+      case 'role_model': {
+        if (Array.isArray(answer.rolemodels) && answer.rolemodels.length > 0) {
+          blocks.push({ type: 'role_model', content: answer.rolemodels });
+        }
+        break;
+      }
+
+      case 'career_goal':
+      case 'role_model_chat': {
+        if (answer.text) {
+          blocks.push({ type: 'text', content: answer.text });
+        }
+        break;
+      }
+
+      case 'trend_path': {
+        if (answer.text) {
+          blocks.push({ type: 'text', content: answer.text });
+        }
+        if (answer.ax_college) {
+          blocks.push({ type: 'ax_college', content: answer.ax_college });
+        }
+        break;
+      }
+
+      case 'EXCEPTION': {
+        if (answer.text) {
+          blocks.push({ type: 'text', content: answer.text });
+        }
+        break;
+      }
     }
 
     return {
       ...msg,
-      answer: cleanedAnswer,
-      roleModels: roleModels.length > 0 ? roleModels : undefined, // ✅ 빈 배열이면 undefined로 처리
+      blocks,
+      responseType: msg.type,
     };
   });
 
@@ -104,15 +153,19 @@ export const fetchSessionMessages = async (
     messages: cleanedMessages,
     hasNext: data.hasNext ?? false,
     nextMessageId: data.nextMessageId ?? null,
+    roleModelDTO: data.roleModelDTO ?? null,
   };
 };
 
-export const createSession = async (): Promise<string> => {
-  const response = await api.post('/sessions/rolemodels', {}, { withCredentials: true });
+export const createRoleModelSession = async (
+  group: RoleModelGroup
+): Promise<{ sessionId: string; roleModelId: string }> => {
+  const response = await api.post('/sessions/rolemodels', group, { withCredentials: true });
   const sessionId = response.data?.result?.sessionId;
+  const roleModelId = response.data?.result?.roleModelId;
 
-  if (!sessionId) {
-    throw new Error('세션 ID를 생성하지 못했습니다');
-  }
-  return sessionId;
+  return {
+    sessionId,
+    roleModelId,
+  };
 };

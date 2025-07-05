@@ -1,6 +1,5 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Home from '../pages/Home';
 import MainPage from '../pages/MainPage';
 import IntroPage from '../pages/IntroPage';
 import LoginPage from '../pages/LoginPage';
@@ -25,7 +24,7 @@ function AppRouter() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/intro" element={<IntroPage />} />
         <Route path="/chat/:sessionId" element={<ChatPage />} />
-        <Route path="/rolemodel/*" element={<RoleModelPage />} />
+        <Route path="/rolemodel/:rolemodelId" element={<RoleModelPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/careerintro" element={<CareerIntroPage />} />
         <Route path="/admin" element={<AdminPage />} />

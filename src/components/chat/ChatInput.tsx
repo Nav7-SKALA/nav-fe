@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import { FaQuestion } from 'react-icons/fa';
 import { IoSend } from 'react-icons/io5';
 import { Message } from '../../types/chat';
-import { sendChatMessageStreaming } from '../../api/chat';
+import { sendChatMessageStreaming, sendRoleModelChatStreaming } from '../../api/chat';
 
 interface ChatInputProps {
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
@@ -15,6 +15,7 @@ interface ChatInputProps {
   isSidebarOpen?: boolean;
   inputValue?: string;
   setInputValue?: React.Dispatch<React.SetStateAction<string>>;
+  roleModelId?: string | null;
 }
 
 const ChatInput = ({
@@ -26,6 +27,7 @@ const ChatInput = ({
   isSidebarOpen,
   inputValue,
   setInputValue,
+  roleModelId,
 }: ChatInputProps) => {
   const location = useLocation();
   const { sessionId } = useParams<{ sessionId: string }>();
@@ -74,26 +76,34 @@ const ChatInput = ({
 
     const message: Message = {
       question: userQuestion,
-      answer: '',
       createdAt: now,
       lastActiveAt: now,
       sessionId: targetSessionId,
       memberMessageId: messageId,
       isStreaming: true,
+      blocks: [],
     };
 
     setMessages((prev) => [...prev, message]);
     setLatestMessageId(messageId);
-
     setTimeout(() => scrollToBottom(), 0);
 
-    const fullAnswer = await sendChatMessageStreaming(targetSessionId, userQuestion, messageId);
+    let fullAnswer: Message;
+    try {
+      if (roleModelId) {
+        fullAnswer = await sendRoleModelChatStreaming(targetSessionId, userQuestion, messageId);
+      } else {
+        fullAnswer = await sendChatMessageStreaming(targetSessionId, userQuestion, messageId);
+      }
+    } catch (err) {
+      console.error('메시지 전송 실패:', err);
+      return;
+    }
 
-    // ✅ 전체 answer만 한번에 넣어주면, ChatItem이 한 글자씩 보여줌
     setMessages((prev) =>
       prev.map((msg) =>
         msg.memberMessageId === fullAnswer.memberMessageId
-          ? { ...msg, answer: fullAnswer.answer, isStreaming: true, roleModels: fullAnswer.roleModels } // 타이핑 중
+          ? { ...msg, blocks: fullAnswer.blocks, isStreaming: true, responseType: fullAnswer.responseType } // 타이핑 중
           : msg
       )
     );

@@ -1,67 +1,58 @@
 import React from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
+import { RoleModelGroup } from '../types/roleModel';
 import { MaleImg } from '../assets/common';
+import { createRoleModelSession } from '../api/session';
 
 const RoleModelDetailPage = () => {
-  const journeyData = [
-    {
-      project: '통신사 Digital Home Network NOC 구축',
-      detail: {
-        규모: '대형',
-        역할: 'PM',
-        수행연차: '12-15',
-      },
-    },
-    {
-      project: '통신사 G2(차세대) 구축',
-      detail: {
-        규모: '중형',
-        역할: 'PM, PL',
-        수행연차: '10-11',
-      },
-    },
-    {
-      project: '공공기관 AI 분석시스템 구축',
-      detail: {
-        규모: '대형',
-        역할: 'PL',
-        수행연차: '16-17',
-      },
-    },
-    {
-      project: '공공기관 AI 분석시스템 구축',
-      detail: {
-        규모: '대형',
-        역할: 'PL',
-        수행연차: '16-17',
-      },
-    },
-  ];
+  const navigate = useNavigate();
+  const location = useLocation();
+  const state = location.state as {
+    roleModelGroup: RoleModelGroup;
+  };
+
+  const handleTalkButtonClick = async () => {
+    try {
+      console.log(state.roleModelGroup);
+      const { sessionId, roleModelId } = await createRoleModelSession(state.roleModelGroup);
+
+      navigate(`/chat/${sessionId}`, {
+        state: {
+          roleModelGroup: state.roleModelGroup,
+          roleModelId,
+        },
+      });
+    } catch (error) {
+      console.error('세션 생성 실패:', error);
+    }
+  };
+
   return (
     <PageWrapper>
       <Container>
         <LeftSection>
           {/* 프로필 정보 */}
           <ProfileImage src={MaleImg} />
-          <Name>김현준 매니저</Name>
+          <Name>{state.roleModelGroup.group_name}</Name>
           <Divider />
           <Profile>
             <SectionTitle>Profile</SectionTitle>
             <Row>
               <strong>Job</strong>
-              <span>Senior PM Engineer</span>
+              <span>{state.roleModelGroup.current_position}</span>
             </Row>
             <Row>
               <strong>Skill set</strong>
-              <span>Infra PM, AI/Data Dev.</span>
+              <span>{state.roleModelGroup.common_skill_set.join(', ')}</span>
             </Row>
             <Row>
               <strong>Tenure</strong>
-              <span>20년차</span>
+              <span>{state.roleModelGroup.experience_years}</span>
             </Row>
           </Profile>
           <ButtonWrapper>
-            <TalkButton>대화하기</TalkButton>
+            <TalkButton onClick={handleTalkButtonClick}>대화하기</TalkButton>
           </ButtonWrapper>
         </LeftSection>
 
@@ -70,24 +61,10 @@ const RoleModelDetailPage = () => {
             <SectionTitle>Journey</SectionTitle>
             <ScrollableArea>
               <TimelineContainer>
-                {journeyData.map((item, index) => (
+                {state.roleModelGroup.common_project.map((item, index) => (
                   <TimelineItem key={index}>
-                    <ProjectCard>{item.project}</ProjectCard>
+                    <ProjectCard>{item}</ProjectCard>
                     <ProjectLine />
-                    <DetailBox>
-                      <DetailRow>
-                        <span>규모</span>
-                        <span>{item.detail.규모}</span>
-                      </DetailRow>
-                      <DetailRow>
-                        <span>역할</span>
-                        <span>{item.detail.역할}</span>
-                      </DetailRow>
-                      <DetailRow>
-                        <span>수행 연차</span>
-                        <span>{item.detail.수행연차}</span>
-                      </DetailRow>
-                    </DetailBox>
                   </TimelineItem>
                 ))}
               </TimelineContainer>
@@ -105,32 +82,26 @@ const RoleModelDetailPage = () => {
               </CenterLabel>
               <Quadrant>
                 <Label>
-                  정보처리기사
-                  <br />
-                  AWS
-                  <br />
-                  SQLD
+                  {state.roleModelGroup.common_cert.length > 0 ? state.roleModelGroup.common_cert.join('\n') : '없음'}
                 </Label>
               </Quadrant>
               <Quadrant>
                 <Label>
-                  AIData Dev.
-                  <br />
-                  Infra PM
+                  {state.roleModelGroup.common_skill_set.length > 0
+                    ? state.roleModelGroup.common_skill_set.join('\n')
+                    : '없음'}
                 </Label>
               </Quadrant>
               <Quadrant>
                 <Label>
-                  NVIDIA GTC
-                  <br />
-                  KubeCon
+                  {state.roleModelGroup.common_experience.length > 0
+                    ? state.roleModelGroup.common_experience.join('\n')
+                    : '없음'}
                 </Label>
               </Quadrant>
               <Quadrant>
                 <Label>
-                  통신
-                  <br />
-                  공공
+                  {state.roleModelGroup.main_domains.length > 0 ? state.roleModelGroup.main_domains.join('\n') : '없음'}
                 </Label>
               </Quadrant>
             </ChartContainer>
@@ -497,11 +468,16 @@ const Quadrant = styled.div`
 const Label = styled.div`
   position: relative;
   z-index: 2;
-  font-size: clamp(0.7rem, 2vw, 0.9rem); /* 반응형 폰트 */
-  font-weight: 600;
+  font-size: clamp(0.7rem, 2vw, 0.8rem); /* 반응형 폰트 */
+  font-weight: 500;
   text-align: center;
   color: #333;
   line-height: 1.2;
+
+  white-space: pre-line; // ✅ 줄바꿈(\n) 반영
+  word-break: break-word; // ✅ 단어 단위로 잘라줌
+  overflow-wrap: break-word; // ✅ 줄바꿈 보장
+  max-width: 90%; // ✅ 부모 너비 기준 최대 너비 제한
 `;
 
 const ScrollableArea = styled.div`
@@ -510,6 +486,9 @@ const ScrollableArea = styled.div`
   overflow-y: auto;
   height: 80%;
   padding-right: 0.5rem;
+
+  display: flex;
+  justify-content: center;
 
   /* 스크롤바 커스터마이징 (선택사항) */
   &::-webkit-scrollbar {
@@ -534,7 +513,8 @@ const TimelineContainer = styled.div`
 
 const ProjectLine = styled.div`
   position: absolute;
-  left: 25%;
+  left: 50%;
+  transform: translateX(-50%);
   bottom: 0;
   width: 2px;
   height: 1.5rem;
@@ -567,27 +547,4 @@ const ProjectCard = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-`;
-
-const DetailBox = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  color: #888;
-  font-size: 0.9rem;
-`;
-
-const DetailRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  width: 220px;
-
-  span:first-child {
-    color: #aaa;
-  }
-
-  span:last-child {
-    color: #444;
-    font-weight: 500;
-  }
 `;
