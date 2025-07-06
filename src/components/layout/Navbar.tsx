@@ -16,7 +16,7 @@ interface NavbarProps {
 const SidebarContainer = styled.div`
   width: 250px;
   height: 100vh;
-  background-color: #ffe1e1;
+  background-color: #fce7e7;
   border-right: 1px solid #e9ecef;
   display: flex;
   flex-direction: column;
@@ -28,7 +28,7 @@ const NavbarHeader = styled.div`
   align-items: center;
   padding: 1rem;
   border-bottom: 0.5px solid #5f6368;
-  background-color: #ffe1e1;
+  background-color: #fce7e7;
   box-sizing: border-box;
   height: 80px;
 `;
