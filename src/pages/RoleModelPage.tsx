@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import { RoleModelGroup } from '../types/roleModel';
 import { MaleImg } from '../assets/common';
+import Header from '../components/layout/Header';
 import { createRoleModelSession } from '../api/session';
 
 const RoleModelDetailPage = () => {
@@ -30,6 +31,7 @@ const RoleModelDetailPage = () => {
 
   return (
     <PageWrapper>
+      <Header type="simple" username={state.roleModelGroup.group_name} />
       <Container>
         <LeftSection>
           {/* 프로필 정보 */}
@@ -116,6 +118,7 @@ export default RoleModelDetailPage;
 
 const PageWrapper = styled.div`
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
@@ -194,8 +197,8 @@ const RightSection = styled.div`
 `;
 
 const ProfileImage = styled.img`
-  width: min(12rem, 25vw);
-  height: min(12rem, 25vw);
+  width: min(11rem, 25vw);
+  height: min(11rem, 25vw);
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
@@ -231,7 +234,7 @@ const Profile = styled.div`
   width: 80%;
   flex: 1;
   min-height: 0;
-  overflow: hidden;
+  overflow: auto;
 
   @media (max-width: 768px) {
     flex: none;
