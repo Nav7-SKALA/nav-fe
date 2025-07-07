@@ -293,7 +293,6 @@ const ProfileFormSteps = ({ currentStep, onNextStep, profileSectionData }: Profi
       <StepContentWrapper>{steps[step]}</StepContentWrapper>
 
       <ButtonRow>
-        <Button onClick={() => setStep((prev) => prev - 1)}>이전</Button>
         {step < steps.length - 1 ? (
           <Button onClick={handleStepNext}>다음</Button>
         ) : (

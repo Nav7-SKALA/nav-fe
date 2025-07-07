@@ -108,7 +108,17 @@ export const fetchSessionMessages = async (
 
       case 'role_model': {
         if (Array.isArray(answer.rolemodels) && answer.rolemodels.length > 0) {
-          blocks.push({ type: 'role_model', content: answer.rolemodels });
+          const enrichedRoleModels = answer.rolemodels.map((rm: RoleModelGroup) => {
+            const greetingMessage = `안녕하세요, ${rm.group_name}입니다. \n\n저는 ${rm.current_position}로서 약 ${rm.experience_years}의 경력을 가지고 있어요. \n\n${rm.advice_message} 저에게 궁금한점이 있으신가요?`;
+            return {
+              ...rm,
+              greetingMessage,
+            };
+          });
+
+          console.log(enrichedRoleModels);
+
+          blocks.push({ type: 'role_model', content: enrichedRoleModels });
         }
         break;
       }

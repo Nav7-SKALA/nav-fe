@@ -103,7 +103,7 @@ export const sendChatMessageStreaming = async (
         }
 
         if (map.ax_college) {
-          blocks.push({ type: 'ax_college', content: map.ax_college });
+          blocks.push({ type: 'ax_college', content: map.ax_college.toLowerCase() });
         }
         break;
       }

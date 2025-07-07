@@ -102,7 +102,11 @@ const ChatPage = () => {
         const now = new Date().toISOString();
         const messageId = Date.now();
 
-        const greeting = splitIntoSentences(res.roleModelDTO.greetingMessage);
+        const greetingRaw = res.roleModelDTO.greetingMessage?.trim().length
+          ? res.roleModelDTO.greetingMessage
+          : `안녕하세요, ${res.roleModelDTO.group_name}입니다. \n\n저는 ${res.roleModelDTO.current_position}로서 약 ${res.roleModelDTO.experience_years}의 경력을 가지고 있어요. \n\n커리어에 대해 함께 이야기해볼까요?`;
+
+        const greeting = splitIntoSentences(greetingRaw);
 
         const roleModelGreetingMessage: Message = {
           sessionId: sessionId,

@@ -15,8 +15,13 @@ const RoleModelDetailPage = () => {
 
   const handleTalkButtonClick = async () => {
     try {
-      console.log(state.roleModelGroup);
-      const { sessionId, roleModelId } = await createRoleModelSession(state.roleModelGroup);
+      const { group_name, current_position, experience_years } = state.roleModelGroup;
+      const sessionTitle = `${group_name} (${current_position}, ${experience_years}차)의 커리어 대화`;
+      const payload = {
+        sessionTitle: sessionTitle,
+        ...state.roleModelGroup,
+      };
+      const { sessionId, roleModelId } = await createRoleModelSession(payload);
 
       navigate(`/chat/${sessionId}`, {
         state: {
