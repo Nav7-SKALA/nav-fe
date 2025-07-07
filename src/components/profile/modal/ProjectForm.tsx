@@ -24,7 +24,7 @@ const ProjectForm = ({ onSubmit, roleOptions, skillOptions, domainOptions }: Pro
     const projectData: ProjectFormDto = {
       domainId: domain?.value ?? null,
       projectName: title,
-      projectDescribe: description,
+      projectDescribe: description.trim() === '' ? null : description,
       startYear: Number(startYear),
       endYear: Number(endYear),
       projectSize: scale?.value ?? null,

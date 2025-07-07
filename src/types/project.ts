@@ -11,7 +11,7 @@ export interface Project {
 export interface ProjectFormDto {
   domainId: (string | number) | null;
   projectName: string;
-  projectDescribe: string;
+  projectDescribe: string | null;
   startYear: number;
   endYear: number;
   projectSize: (string | number) | null;
