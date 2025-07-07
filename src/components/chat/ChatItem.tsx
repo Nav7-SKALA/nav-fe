@@ -184,7 +184,7 @@ const ChatItem = ({
           </FadeInContainer>
         );
       case 'ax_college':
-        const imagePath = `/ax_college/${block.content}.jpeg`;
+        const imagePath = `/ax_college/${encodeURIComponent(block.content)}.jpeg`;
         return (
           <FadeInContainer key={idx} ref={roleModelRef} $skipAnimation={isLoadingPreviousChats}>
             <div style={{ width: '100%', marginBottom: '1rem', borderTop: '1px solid #ccc', paddingTop: '1rem' }} />
